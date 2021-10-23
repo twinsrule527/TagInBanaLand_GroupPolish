@@ -18,11 +18,13 @@ public class PlayerControl : MonoBehaviour
     private float jumpTime;
     [SerializeField] private float maxJumpTime;
     private Rigidbody2D myBody;
+    private Animator myAnimator;
 
     
     void Start()
     {
         myBody = GetComponent<Rigidbody2D>();
+        myAnimator = GetComponent<Animator>();
 
     }
     void Update()
@@ -49,6 +51,7 @@ public class PlayerControl : MonoBehaviour
             if(jumpTime <= 0) {
                 isJumping = false;
                 gameObject.layer = 0;
+                myAnimator.SetBool("jumping", false);
             }
         }
     }
@@ -71,6 +74,7 @@ public class PlayerControl : MonoBehaviour
                 isJumping = true;
                 gameObject.layer = 3;
                 jumpTime = maxJumpTime;
+                myAnimator.SetBool("jumping", true);
             }
         }
     }

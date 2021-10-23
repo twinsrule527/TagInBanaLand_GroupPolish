@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 public class AssignStartingPlayers : MonoBehaviour
 {
     public PlayerInputManager InputManager;
-    void Start()
+    void Awake()
     {
         InputManager.JoinPlayer(0, 0, "KeyboardLeft", Keyboard.current);
         InputManager.JoinPlayer(1, 1, "KeyboardRight", Keyboard.current);
