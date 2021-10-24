@@ -3,7 +3,11 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - PlayerTag
+  - DifficultTerrain
+  - TripTrigger
+  - Shadow
   layers:
   - Default
   - TransparentFX
@@ -12,7 +16,7 @@ TagManager:
   - Water
   - UI
   - Fence
-  - 
+  - Ground
   - 
   - 
   - 
