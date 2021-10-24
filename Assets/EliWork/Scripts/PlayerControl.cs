@@ -259,8 +259,12 @@ public class PlayerControl : MonoBehaviour
         gameObject.layer = 0;
         isJumping = false;
         if(tripActive) {
+            moveSpeed = Vector2.zero;
+            myBody.velocity = moveSpeed;
+            frozen = true;
             myAnimator.Play("FallState", 0);
             yield return new WaitForSeconds(maxFallTime);
+            frozen = false;
         }
         if(moveSpeed == Vector2.zero) {
             myAnimator.Play("BaoIdle");
