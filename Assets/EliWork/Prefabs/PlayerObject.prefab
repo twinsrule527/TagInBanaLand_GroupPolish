@@ -148,13 +148,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayerNumber: 0
   maxSpeed: 4.5
+  taggerMaxSpeed: 4.8
   acceleration: 15
   difficultTerrainSpeedModifier: 0.6
+  slipFriction: 0.95
+  normalFriction: 0
   maxJumpTime: 0.4
   maxFallTime: 0.4
   maxJumpHeight: 0.5
   jumpGravityAcc: -20
-  tagDelay: 1
+  tagDelay: 1.5
   tagDist: 0.5
   tagFreezeBaseTime: 0.5
   tagFreezeTime: 2

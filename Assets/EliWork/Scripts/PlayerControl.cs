@@ -11,12 +11,16 @@ public class PlayerControl : MonoBehaviour
 
     //Movement-related Variables
     [SerializeField] private float maxSpeed;//The fastest speed a player can run at
+    [SerializeField] private float taggerMaxSpeed;//The tagger can move faster than other players
     [SerializeField] private float acceleration;//How fast the player speeds up
     private Vector2 movementInput;//Whatever input is being given throught the controller regarding player movement
     private Vector2 curVelocity;//Player's velocity at the moment
     private Vector2 moveSpeed;//Player's current speed
     private bool onDifficultTerrain;//Whether the player is on terrain that's harder to move on
     [SerializeField] private float difficultTerrainSpeedModifier;
+    private bool onSlipperyTerrain;//WHether the player is standing on slippery terrain
+    [SerializeField] private float slipFriction;//The friction multiplier when on slippery terrain
+    [SerializeField] private float normalFriction;
     
     //Jumping-related Variables
     private bool isJumping;
@@ -51,7 +55,6 @@ public class PlayerControl : MonoBehaviour
     {
         myBody = GetComponent<Rigidbody2D>();
         myAnimator = GetComponentInChildren<Animator>();
-        Debug.Log(myAnimator);
         mySprite = GetComponentInChildren<SpriteRenderer>();
         myTagCollider = GetComponentInChildren<BoxCollider2D>();
 
@@ -64,15 +67,33 @@ public class PlayerControl : MonoBehaviour
             if(!isJumping) {
                 //If the player has changed directions or stopped moving in 1 direction, their speed in that direction is reversed
                 if(!GeneralFunctions.SameSign(movementInput.x, moveSpeed.x)) {
-                    moveSpeed.x = 0;
+                    if(!onSlipperyTerrain) {
+                        moveSpeed.x *= normalFriction;
+                    }
+                    else {
+                        moveSpeed.x *= slipFriction;
+                    }
                 }
                 if(!GeneralFunctions.SameSign(movementInput.y, moveSpeed.y)) {
-                    moveSpeed.y = 0;
+                    if(!onSlipperyTerrain) {
+                        moveSpeed.y *= normalFriction;
+                    }
+                    else {
+                        moveSpeed.y *= slipFriction;
+                    }
                 }
                 //Increases the player's movement by the direction they're moving
                 moveSpeed += movementInput * acceleration * Time.deltaTime;
-                if(moveSpeed.magnitude > maxSpeed) {//If the player would be moving too fast, their movement is clamped
-                    moveSpeed = moveSpeed.normalized * maxSpeed;
+                //The tagger can move faster than other players
+                if(ItManager.Instance.Tagger == this) {
+                    if(moveSpeed.magnitude > taggerMaxSpeed) {
+                        moveSpeed = moveSpeed.normalized * taggerMaxSpeed;
+                    }
+                }
+                else {
+                    if(moveSpeed.magnitude > maxSpeed) {//If the player would be moving too fast, their movement is clamped
+                        moveSpeed = moveSpeed.normalized * maxSpeed;
+                    }
                 }
                 
                 curVelocity = moveSpeed;
@@ -80,7 +101,7 @@ public class PlayerControl : MonoBehaviour
                     curVelocity *= difficultTerrainSpeedModifier;
                 }
                 //Sets their animation depending on the direction they're facing in
-                if(moveSpeed == Vector2.zero) {
+                if(movementInput == Vector2.zero) {
                     myAnimator.SetInteger("direction", 0);
                 }
                 else {
