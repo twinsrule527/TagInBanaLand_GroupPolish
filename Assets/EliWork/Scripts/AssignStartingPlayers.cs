@@ -1,11 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Cinemachine;
 using UnityEngine.InputSystem;
 public class AssignStartingPlayers : MonoBehaviour
 {
     public PlayerInputManager InputManager;
     [SerializeField] private int maxPlayers;
+    [SerializeField] private CinemachineTargetGroup group;
+    [SerializeField] private float cameraCharacterRadius;
+    [SerializeField] private float cameraCharacterWeight;
     void Awake()
     {
         CreatePlayer("KeyboardLeft", Keyboard.current);
@@ -14,7 +18,10 @@ public class AssignStartingPlayers : MonoBehaviour
         foreach(Gamepad pad in gamepads) {
             CreatePlayer("Gamepad", pad);
         }
-        Debug.Log(gamepads);
+        PlayerControl[] allPlayers = FindObjectsOfType<PlayerControl>();
+        foreach(PlayerControl player in allPlayers) {
+            group.AddMember(player.transform, cameraCharacterWeight, cameraCharacterRadius);
+        }
         //Ignores collisions between the player when they jump and any objects they can jump over
         Physics2D.IgnoreLayerCollision(3, 6, true);
     }
