@@ -147,6 +147,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PlayerNumber: 0
+  frozen: 0
   maxSpeed: 4.5
   taggerMaxSpeed: 4.8
   acceleration: 15
@@ -163,6 +164,15 @@ MonoBehaviour:
   tagFreezeTime: 2
   currentColorTag: {r: 0, g: 0, b: 0, a: 0}
   newColorTag: {r: 0, g: 0, b: 0, a: 0}
+  throwDelay: 0
+  throwDelaySuccesful: 1
+  thrownPlayerFreezeTime: 0.2
+  thrownPlayerUnfrozenTime: 0.5
+  throwPlayerInitialSpeed: 7
+  throwObjectInitialSpeed: 50
+  thrownObjMassMultiplier: 1000
+  thrownObjTime: 1
+  thrownFriction: 0.9
 --- !u!50 &2787394651157998601
 Rigidbody2D:
   serializedVersion: 4

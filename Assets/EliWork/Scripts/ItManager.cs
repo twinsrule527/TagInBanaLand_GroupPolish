@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
+using TMPro;
 public class ItManager : Singleton<ItManager>
 {
     
@@ -15,14 +16,32 @@ public class ItManager : Singleton<ItManager>
 
     [SerializeField] private Color TagColor;//Color of the player who is the tagger
 
+    [SerializeField] private float startTimer;
+    private float curTime;
+    [SerializeField] private TMP_Text timerText;
+
     void Start()
     {
         StartCoroutine("StartGame");
+        curTime = startTimer;
     }
 
     void Update()
     {
-        
+        curTime -= Time.deltaTime;
+        if(curTime <= 0) {
+            //WHen the timer reaches zero, the game ends
+            Debug.Log("ENDGAME");
+        }
+        string timeString = (Mathf.FloorToInt(curTime / 60)).ToString() + ":";
+        float secs = Mathf.FloorToInt(curTime%60);
+        if(secs < 10) {
+            timeString += "0" + secs.ToString();
+        }
+        else {
+            timeString += secs.ToString();
+        }
+        timerText.text = timeString;
     }
 
     void ChooseTagger() {
@@ -51,4 +70,5 @@ public class ItManager : Singleton<ItManager>
         ChooseTagger();
         yield return null;
     }
+
 }
