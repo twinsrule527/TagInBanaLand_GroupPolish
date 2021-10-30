@@ -57,6 +57,7 @@ public class PlayerControl : MonoBehaviour
     //These two variables below are used to determine the player's sprite's jump arc when they jump
     [SerializeField] private float maxJumpHeight;
     [SerializeField] private float jumpGravityAcc;
+    private float spriteBaseY;
 
     //tagging-related variables
     [Header("Tagging")]
@@ -108,6 +109,7 @@ public class PlayerControl : MonoBehaviour
         myAnimator = GetComponentInChildren<Animator>();
         mySprite = GetComponentInChildren<SpriteRenderer>();
         myTagCollider = GetComponentInChildren<BoxCollider2D>();
+        spriteBaseY = mySprite.transform.position.y;
 
     }
     void Update()
@@ -380,7 +382,7 @@ public class PlayerControl : MonoBehaviour
         float baseJumpVel = maxJumpHeight / (halfJumpTime) - jumpGravityAcc * halfJumpTime/ 2f;
         Debug.Log(baseJumpVel);
         float curTime = 0;
-        float jumpYPos = 0;
+        float jumpYPos = spriteBaseY;
         while(curTime < maxJumpTime) {
             jumpYPos += baseJumpVel * Time.deltaTime;
             baseJumpVel += jumpGravityAcc * Time.deltaTime;
@@ -388,7 +390,7 @@ public class PlayerControl : MonoBehaviour
             curTime+=Time.deltaTime;
             yield return null;
         }
-        mySprite.transform.position = transform.position;
+        mySprite.transform.position = transform.position + Vector3.up * spriteBaseY;
         gameObject.layer = 0;
         _isJumping = false;
         if(tripActive) {

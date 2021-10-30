@@ -113,7 +113,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: FallState
-  m_Speed: 1
+  m_Speed: 0.1
   m_CycleOffset: 0
   m_Transitions: []
   m_StateMachineBehaviours: []
@@ -125,7 +125,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 1d3f7db1525f4964c91fd3c61e66c995, type: 2}
+  m_Motion: {fileID: 7400000, guid: daf1166ccb36ca3439ea63f2e26a924e, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -322,7 +322,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: RunSideState
-  m_Speed: 0.1
+  m_Speed: 1.5
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -7357025435128472534}
@@ -338,7 +338,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 338e8569999beaf458140a49eecb825b, type: 2}
+  m_Motion: {fileID: 7400000, guid: 16445ef39965d5f4d83a08371e187d58, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -425,7 +425,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Bao
+  m_Name: Chicken
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: jumping
@@ -620,7 +620,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: IdleState
-  m_Speed: 0.1
+  m_Speed: 15
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 7019448389080661221}
@@ -636,7 +636,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 0e8463bf5fbf90745963aeb09f5884ce, type: 2}
+  m_Motion: {fileID: 7400000, guid: c7b9692a2e3b0ca4aa501035a06ec988, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -669,7 +669,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: JumpState
-  m_Speed: 1
+  m_Speed: 0.4575
   m_CycleOffset: 0
   m_Transitions: []
   m_StateMachineBehaviours: []
@@ -681,7 +681,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 4c6873806434fe64fa606b094e48f0d8, type: 2}
+  m_Motion: {fileID: 7400000, guid: b776d1c807087714cba6a496c980deeb, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -822,7 +822,7 @@ AnimatorStateMachine:
     m_Position: {x: 682.4679, y: -108.830536, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -6036021926353884581}
-    m_Position: {x: 580.0028, y: 241.25854, z: 0}
+    m_Position: {x: 580, y: 240, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -941,7 +941,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: StateJump
-  m_Speed: 0.1
+  m_Speed: 15
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -366383923901770284}
@@ -972,7 +972,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: BaoFall
-  m_Speed: 0.1
+  m_Speed: 15
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -4223711349865499157}
@@ -988,7 +988,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 1d3f7db1525f4964c91fd3c61e66c995, type: 2}
+  m_Motion: {fileID: 7400000, guid: daf1166ccb36ca3439ea63f2e26a924e, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
