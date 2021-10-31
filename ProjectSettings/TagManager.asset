@@ -9,6 +9,7 @@ TagManager:
   - TripTrigger
   - Shadow
   - Throwable
+  - Ground
   layers:
   - Default
   - TransparentFX

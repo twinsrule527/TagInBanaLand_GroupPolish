@@ -380,7 +380,6 @@ public class PlayerControl : MonoBehaviour
         myAnimator.Play("JumpState", 0);
         float halfJumpTime = maxJumpTime / 2f;
         float baseJumpVel = maxJumpHeight / (halfJumpTime) - jumpGravityAcc * halfJumpTime/ 2f;
-        Debug.Log(baseJumpVel);
         float curTime = 0;
         float jumpYPos = spriteBaseY;
         while(curTime < maxJumpTime) {
