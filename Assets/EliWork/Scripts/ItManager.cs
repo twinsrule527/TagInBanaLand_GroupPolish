@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.InputSystem;
 public class ItManager : Singleton<ItManager>
 {
     
@@ -13,6 +14,7 @@ public class ItManager : Singleton<ItManager>
         }
     }private List<PlayerControl> allPlayers;
     [SerializeField] private List<Color> PlayerColors;//List of the colors of players
+    [SerializeField] private List<RuntimeAnimatorController> playerAnimators;
 
     [SerializeField] private Color TagColor;//Color of the player who is the tagger
 
@@ -40,7 +42,7 @@ public class ItManager : Singleton<ItManager>
         curTime -= Time.deltaTime;
         if(curTime <= 0) {
             //WHen the timer reaches zero, the game ends
-            Debug.Log("ENDGAME");
+            EndGame();
         }
         string timeString = (Mathf.FloorToInt(curTime / 60)).ToString() + ":";
         float secs = Mathf.FloorToInt(curTime%60);
@@ -75,10 +77,34 @@ public class ItManager : Singleton<ItManager>
     }
 
     void ChooseTagger() {
-        allPlayers = new List<PlayerControl>(FindObjectsOfType<PlayerControl>());
+        List<PlayerInput> playersUnorder = new List<PlayerInput>(FindObjectsOfType<PlayerInput>());
+        allPlayers = new List<PlayerControl>();
+        //A haphazard way to get all the players, in the correct order
+        foreach(PlayerInput player in playersUnorder) {
+            //THIS IS A TEMPORARY MEASURE BC SOMETHING's GOING WRONG W/ THE CAMERA
+            player.transform.position = Vector3.up * 20;
+            if(player.currentControlScheme == "KeyboardLeft") {
+                allPlayers.Add(player.GetComponent<PlayerControl>());
+            }
+        }
+        foreach(PlayerInput player in playersUnorder) {
+            if(player.currentControlScheme == "KeyboardRight") {
+                allPlayers.Add(player.GetComponent<PlayerControl>());
+            }
+        }
+        foreach(PlayerInput player in playersUnorder) {
+            if(player.currentControlScheme == "Gamepad") {
+                allPlayers.Add(player.GetComponent<PlayerControl>());
+            }
+        }
         for(int i = 0; i < allPlayers.Count; i++) {
             allPlayers[i].MySprite.color = PlayerColors[i];
             allPlayers[i].PlayerNumber = i;
+            allPlayers[i].MyAnimator.runtimeAnimatorController = playerAnimators[i];
+        }
+        //Makes invisible all scores of players not playing
+        for(int i = allPlayers.Count; i < 4; i++) {
+            scoreText[i].transform.parent.gameObject.SetActive(false);
         }
         int rnd = Random.Range(0, allPlayers.Count);
         _tagger = allPlayers[rnd];
@@ -101,4 +127,21 @@ public class ItManager : Singleton<ItManager>
         yield return null;
     }
 
+    //Is called when the timer reaches 0: ends the game at the moment
+    [SerializeField] private Image EndGameScreen;
+    [SerializeField] private TMP_Text EndGameText;
+    void EndGame() {
+        int winningPlayer = 0;
+        float winningScore = 0;
+        foreach(PlayerControl player in allPlayers) {
+            if(PlayerScores[player.PlayerNumber] > winningScore) {
+                winningPlayer = player.PlayerNumber;
+                winningScore = PlayerScores[player.PlayerNumber];
+            }
+            player.gameObject.SetActive(false);
+        }
+        EndGameText.text = "Player " + (winningPlayer + 1).ToString() + " won, with " + Mathf.RoundToInt(winningScore).ToString() + " points!";
+        EndGameScreen.gameObject.SetActive(true);
+        gameObject.SetActive(false);
+    }
 }

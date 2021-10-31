@@ -44,4 +44,12 @@ public class AssignStartingPlayers : MonoBehaviour
         }
     }
 
+    void Update() {
+
+        //Restart when P is pressed
+        if(Input.GetKeyDown(KeyCode.P)) {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+        }
+    }
+
 }

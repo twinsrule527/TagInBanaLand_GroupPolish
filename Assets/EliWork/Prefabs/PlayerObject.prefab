@@ -152,20 +152,21 @@ MonoBehaviour:
   taggerMaxSpeed: 4.8
   acceleration: 15
   difficultTerrainSpeedModifier: 0.6
+  waterTerrainSpeedModifier: 0.3
   slipFriction: 0.95
   normalFriction: 0.7
   maxJumpTime: 0.4
   maxFallTime: 0.4
   maxJumpHeight: 0.3
   jumpGravityAcc: -20
-  tagDelay: 1.5
+  tagDelay: 0
   tagDist: 0.5
   tagFreezeBaseTime: 0.5
   tagFreezeTime: 2
   currentColorTag: {r: 0, g: 0, b: 0, a: 0}
   newColorTag: {r: 0, g: 0, b: 0, a: 0}
   throwDelay: 0
-  throwDelaySuccesful: 1
+  throwDelaySuccesful: 0.5
   thrownPlayerFreezeTime: 0.2
   thrownPlayerUnfrozenTime: 0.5
   throwPlayerInitialSpeed: 7
