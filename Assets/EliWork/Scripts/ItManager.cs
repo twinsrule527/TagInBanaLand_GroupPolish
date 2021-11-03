@@ -28,6 +28,10 @@ public class ItManager : Singleton<ItManager>
     [SerializeField] private float scorePerDist;//How many points a player gets depending on how far away they are (furthest player gets 0, everyone else gets points relative to that)
     [SerializeField] private TMP_Text[] scoreText;
 
+    //Icons that appear above players heads
+    [SerializeField] private HeadIcon tagIcon;
+    [SerializeField] private List<HeadIcon> scoreIcons;//Each score icon is a multiplier - only included w/ 3-4 players
+
     private PlayerControl[] players;//An array of all players
     void Start()
     {
@@ -35,6 +39,10 @@ public class ItManager : Singleton<ItManager>
         curTime = startTimer;
         players = FindObjectsOfType<PlayerControl>();
         PlayerScores = new float[players.Length];
+        //Disables score multipliers
+        for(int i = players.Length - 2; i < scoreIcons.Count; i++) {
+            scoreIcons[i].gameObject.SetActive(false);
+        }
     }
 
     void Update()
@@ -55,7 +63,34 @@ public class ItManager : Singleton<ItManager>
         timerText.text = timeString;
         //Calculate each player's score
         if(Tagger != null) {
-            float maxDistFromIt = 0;
+            //Each player gets points - you have a score multiplier if you're closer to it
+            List<PlayerControl> nonItPlayers = new List<PlayerControl>(players);
+            nonItPlayers.Remove(Tagger);
+            nonItPlayers = OrderByDistance(nonItPlayers, Tagger.transform.position);
+            for(int i = 0; i < nonItPlayers.Count - 1; i++) {
+                scoreIcons[i].ChangeParent(nonItPlayers[i].transform);
+            }
+            //Add/Multiply scores
+            switch(nonItPlayers.Count) {
+                case 1 :
+                    PlayerScores[nonItPlayers[0].PlayerNumber] += scorePerSec * Time.deltaTime;
+                    break;
+                case 2 :
+                    //Closest player gets double points
+                    PlayerScores[nonItPlayers[0].PlayerNumber] += scorePerSec * Time.deltaTime * 2;
+                    PlayerScores[nonItPlayers[1].PlayerNumber] += scorePerSec * Time.deltaTime;
+                    break;
+                case 3 :
+                    PlayerScores[nonItPlayers[0].PlayerNumber] += scorePerSec * Time.deltaTime * 2;
+                    PlayerScores[nonItPlayers[1].PlayerNumber] += scorePerSec * Time.deltaTime * 1.5f;
+                    PlayerScores[nonItPlayers[2].PlayerNumber] += scorePerSec * Time.deltaTime;
+                    break;
+            }
+            foreach(PlayerControl player in players) {
+                float displayScore = Mathf.Round(PlayerScores[player.PlayerNumber]);
+                scoreText[player.PlayerNumber].text = displayScore.ToString();
+            }
+            /*float maxDistFromIt = 0;
             foreach(PlayerControl player in players) {
                 float distFromIt = (player.transform.position - Tagger.transform.position).magnitude;
                 maxDistFromIt = Mathf.Max(maxDistFromIt, distFromIt);
@@ -72,7 +107,7 @@ public class ItManager : Singleton<ItManager>
                 }
                 float displayScore = Mathf.Round(PlayerScores[player.PlayerNumber]);
                 scoreText[player.PlayerNumber].text = displayScore.ToString();
-            }
+            }*/
         }
     }
 
@@ -88,7 +123,7 @@ public class ItManager : Singleton<ItManager>
             }
         }
         foreach(PlayerInput player in playersUnorder) {
-            if(player.currentControlScheme == "KeyboardRight") {
+            if(player.currentControlScheme == "KeyboardRight2") {
                 allPlayers.Add(player.GetComponent<PlayerControl>());
             }
         }
@@ -109,6 +144,7 @@ public class ItManager : Singleton<ItManager>
         int rnd = Random.Range(0, allPlayers.Count);
         _tagger = allPlayers[rnd];
         _tagger.MySprite.color = TagColor;
+        tagIcon.ChangeParent(_tagger.transform);
     }
 
     public void SetTagger(GameObject taggedPlayer) {
@@ -119,6 +155,7 @@ public class ItManager : Singleton<ItManager>
         _tagger.newColorTag = TagColor;
         _tagger.currentColorTag = _tagger.MySprite.color;
         _tagger.StartCoroutine("WhenTagged");
+        tagIcon.ChangeParent(_tagger.transform);
     }
 
     private IEnumerator StartGame() {
@@ -143,5 +180,24 @@ public class ItManager : Singleton<ItManager>
         EndGameText.text = "Player " + (winningPlayer + 1).ToString() + " won, with " + Mathf.RoundToInt(winningScore).ToString() + " points!";
         EndGameScreen.gameObject.SetActive(true);
         gameObject.SetActive(false);
+    }
+
+    //Reorders a list of players to be ordered by closest player to furthest player
+    List<PlayerControl> OrderByDistance(List<PlayerControl> unorderedList, Vector3 pos) {
+        List<PlayerControl> orderedList = new List<PlayerControl>();
+        while(unorderedList.Count > 0) {
+            float minDistFromTagger = 1000000;
+            int num = 0;
+            for(int i = 0; i < unorderedList.Count; i++) {
+                float distFromTagger = (unorderedList[i].transform.position - pos).magnitude;
+                if(distFromTagger < minDistFromTagger) {
+                    minDistFromTagger = distFromTagger;
+                    num = i;
+                }
+            }
+            orderedList.Add(unorderedList[num]);
+            unorderedList.RemoveAt(num);
+        }
+        return orderedList;
     }
 }

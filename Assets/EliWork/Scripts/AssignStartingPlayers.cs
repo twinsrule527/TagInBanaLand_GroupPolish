@@ -35,12 +35,12 @@ public class AssignStartingPlayers : MonoBehaviour
         List<PlayerInput> currentPlayers = new List<PlayerInput>(FindObjectsOfType<PlayerInput>());
         bool secondKeyboardExists = false;
         foreach(PlayerInput player in currentPlayers) {
-            if(player.currentControlScheme == "KeyboardRight") {
+            if(player.currentControlScheme == "KeyboardRight2") {
                 secondKeyboardExists = true;
             }
         }
         if(!secondKeyboardExists) {
-            CreatePlayer("KeyboardRight", Keyboard.current);
+            CreatePlayer("KeyboardRight2", Keyboard.current);
         }
     }
 

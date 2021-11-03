@@ -149,12 +149,13 @@ MonoBehaviour:
   PlayerNumber: 0
   frozen: 0
   maxSpeed: 4.5
-  taggerMaxSpeed: 4.8
+  taggerMaxSpeed: 5
   acceleration: 15
   difficultTerrainSpeedModifier: 0.6
   waterTerrainSpeedModifier: 0.3
   slipFriction: 0.95
   normalFriction: 0.7
+  prevTaggerSpeedBonusTime: 2
   maxJumpTime: 0.4
   maxFallTime: 0.4
   maxJumpHeight: 0.3
@@ -167,13 +168,15 @@ MonoBehaviour:
   newColorTag: {r: 0, g: 0, b: 0, a: 0}
   throwDelay: 0
   throwDelaySuccesful: 0.5
-  thrownPlayerFreezeTime: 0.2
+  thrownPlayerFreezeTime: 0.3
   thrownPlayerUnfrozenTime: 0.5
-  throwPlayerInitialSpeed: 7
+  throwPlayerInitialSpeed: 9
   throwObjectInitialSpeed: 50
   thrownObjMassMultiplier: 1000
   thrownObjTime: 1
   thrownFriction: 0.9
+  depthYOffset: 0
+  tagPress: {fileID: 0}
 --- !u!50 &2787394651157998601
 Rigidbody2D:
   serializedVersion: 4

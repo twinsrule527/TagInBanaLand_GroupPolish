@@ -40,6 +40,8 @@ public class PlayerControl : MonoBehaviour
     private bool onSlipperyTerrain;//WHether the player is standing on slippery terrain
     [SerializeField] private float slipFriction;//The friction multiplier when on slippery terrain
     [SerializeField] private float normalFriction;
+    private float prevTaggerTime;//How long since last been tagger - used to get speed boost
+    [SerializeField] private float prevTaggerSpeedBonusTime;
     
     //Jumping-related Variables
     [Header("Jumping")]
@@ -148,9 +150,12 @@ public class PlayerControl : MonoBehaviour
                 //Increases the player's movement by the direction they're moving
                 moveSpeed += movementInput * acceleration * Time.deltaTime;
                 //The tagger can move faster than other players
-                if(ItManager.Instance.Tagger == this) {
+                if(ItManager.Instance.Tagger == this || prevTaggerTime > 0) {
                     if(moveSpeed.magnitude > taggerMaxSpeed) {
                         moveSpeed = moveSpeed.normalized * taggerMaxSpeed;
+                    }
+                    if(prevTaggerTime > 0) {
+                        prevTaggerTime -= Time.deltaTime;
                     }
                 }
                 else {
@@ -286,7 +291,7 @@ public class PlayerControl : MonoBehaviour
             if(!frozen) {
                 //Only can tag if their tag delay has been reset
                 if(tagDelayCurTime <= 0) {
-                    Instantiate(tagPress, transform.position + Vector3.forward, Quaternion.identity);
+                    //Instantiate(tagPress, transform.position + Vector3.forward, Quaternion.identity);
                     //If this character is the current tagger, they try to tag someone in front of them
                     if(ItManager.Instance.Tagger == this) {
                         tagDelayCurTime = tagDelay;
@@ -305,6 +310,9 @@ public class PlayerControl : MonoBehaviour
                         //Then, if the tagbox still has a player in it, it chooses the closest one to tag
                         if(TagBox.Count > 0) {
                             ItManager.Instance.SetTagger(TagBox[0].collider.gameObject);
+                            //Stays fast for a short while
+                            prevTaggerTime = prevTaggerSpeedBonusTime;
+                            tagDelayCurTime = tagFreezeBaseTime;
                         }
                     }
 
@@ -358,6 +366,9 @@ public class PlayerControl : MonoBehaviour
         else if(collider.CompareTag("Water")) {
             onWater = true;
         }
+        else if(collider.CompareTag("Slippery")) {
+            onSlipperyTerrain = true;
+        }
     }
 
     void OnTriggerExit2D(Collider2D collider) {
@@ -372,6 +383,9 @@ public class PlayerControl : MonoBehaviour
         else if(collider.CompareTag("Water")) {
             onWater = false;
         }
+        else if(collider.CompareTag("Slippery")) {
+            onSlipperyTerrain = false;
+        }
     }
 
 
@@ -379,6 +393,7 @@ public class PlayerControl : MonoBehaviour
     public IEnumerator WhenTagged() {
         _curVelocity = Vector2.zero;
         frozen = true;
+        myAnimator.Play("FallState", 0);
         yield return null;
         float curTime = tagFreezeBaseTime;
         while(curTime < tagFreezeTime) {
@@ -388,6 +403,12 @@ public class PlayerControl : MonoBehaviour
         }
         mySprite.color = newColorTag;
         frozen = false;
+        if(moveSpeed == Vector2.zero) {
+            myAnimator.Play("IdleState");
+        }
+        else {
+            myAnimator.Play("RunSideState");
+        }
     }
 
     //When a player tags another, their color changes back
@@ -441,6 +462,13 @@ public class PlayerControl : MonoBehaviour
         PlayerControl thrownControl = player.GetComponent<PlayerControl>();
         //When you throw a player, there is a short period of time where they are just pushed back unable to move
         thrownControl.CurVelocity = direction * throwPlayerInitialSpeed;
+        thrownControl.myAnimator.Play("Thrown", 0);
+        if(direction.x > 0) {
+            thrownControl.MySprite.flipX = true;
+        }
+        else {
+            thrownControl.mySprite.flipX = false;
+        }
         thrownControl.IsJumping = true;
         thrownControl.IsThrown = true;
         player.layer = 3;//They're put on the jumping layer
@@ -449,6 +477,7 @@ public class PlayerControl : MonoBehaviour
         thrownControl.IsJumping = false;
         player.layer = 0;
         thrownControl.MoveSpeed = thrownControl.CurVelocity;
+        thrownControl.myAnimator.Play("IdleState", 0);
         yield return new WaitForSeconds(thrownPlayerUnfrozenTime);
         //Eventually, they gain full control again
         thrownControl.IsThrown = false;
