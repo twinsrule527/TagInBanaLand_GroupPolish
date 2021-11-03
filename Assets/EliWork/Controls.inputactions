@@ -153,6 +153,61 @@
                     "isPartOfComposite": true
                 },
                 {
+                    "name": "IJKL",
+                    "id": "8d04624c-90a3-498a-87a0-5dbd4bfacfce",
+                    "path": "2DVector",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "up",
+                    "id": "91e421a1-9b37-4c94-9dfd-87c5e5d839f2",
+                    "path": "<Keyboard>/i",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardRight2",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "down",
+                    "id": "27812164-26ac-4e5e-aaeb-f5737d9b0e97",
+                    "path": "<Keyboard>/k",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardRight2",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "0ed5c07f-2c02-49b8-b0c0-9fcb43bcab2b",
+                    "path": "<Keyboard>/j",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardRight2",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "fe197484-fcc9-4036-86e2-d78ac865f75d",
+                    "path": "<Keyboard>/l",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardRight2",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
                     "name": "",
                     "id": "781358e6-fc85-4138-95c5-09ed6a00cc32",
                     "path": "<Keyboard>/rightShift",
@@ -166,7 +221,7 @@
                 {
                     "name": "",
                     "id": "c9e3a470-fc22-4343-ba02-1a572764bccb",
-                    "path": "<Gamepad>/buttonEast",
+                    "path": "<Gamepad>/buttonSouth",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
@@ -187,6 +242,17 @@
                 },
                 {
                     "name": "",
+                    "id": "d4b83327-e5b5-49e7-abb6-0523c7eabb0e",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardRight2",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "d406097b-f4df-4580-b55f-cddbd399b4cc",
                     "path": "<Keyboard>/rightAlt",
                     "interactions": "",
@@ -199,7 +265,7 @@
                 {
                     "name": "",
                     "id": "373d5d4c-3c6f-4eab-a382-5dd40949d850",
-                    "path": "<Gamepad>/buttonSouth",
+                    "path": "<Gamepad>/rightTrigger",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
@@ -214,6 +280,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "KeyboardLeft",
+                    "action": "Tag",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5e70cb94-05cc-4ee3-a70e-3ffbc827cd18",
+                    "path": "<Keyboard>/rightShift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardRight2",
                     "action": "Tag",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -353,6 +430,28 @@
             "devices": [
                 {
                     "devicePath": "<Gamepad>",
+                    "isOptional": true,
+                    "isOR": false
+                }
+            ]
+        },
+        {
+            "name": "KeyboardLeft2",
+            "bindingGroup": "KeyboardLeft2",
+            "devices": [
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": true,
+                    "isOR": false
+                }
+            ]
+        },
+        {
+            "name": "KeyboardRight2",
+            "bindingGroup": "KeyboardRight2",
+            "devices": [
+                {
+                    "devicePath": "<Keyboard>",
                     "isOptional": true,
                     "isOR": false
                 }
