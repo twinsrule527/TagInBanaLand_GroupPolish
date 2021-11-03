@@ -13,7 +13,7 @@ public class AssignStartingPlayers : MonoBehaviour
     void Awake()
     {
         CreatePlayer("KeyboardLeft", Keyboard.current);
-        CreatePlayer("KeyboardRight", Keyboard.current);
+        CreatePlayer("KeyboardRight2", Keyboard.current);
         var gamepads = Gamepad.all;
         foreach(Gamepad pad in gamepads) {
             CreatePlayer("Gamepad", pad);

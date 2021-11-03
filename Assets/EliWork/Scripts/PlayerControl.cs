@@ -250,7 +250,11 @@ public class PlayerControl : MonoBehaviour
         }
 
     }
-
+    //Fixes its depth at late update
+    [SerializeField] private float depthYOffset;
+    void LateUpdate() {
+        transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.y + depthYOffset);
+    }
     void FixedUpdate() {
         myBody.velocity = _curVelocity;
     }
@@ -275,12 +279,14 @@ public class PlayerControl : MonoBehaviour
         }
     }
 
+    [SerializeField] private GameObject tagPress;    
     public void OnTag(InputAction.CallbackContext ctx) {
         if(ctx.performed) {
             //Can't do anything when frozen
             if(!frozen) {
                 //Only can tag if their tag delay has been reset
                 if(tagDelayCurTime <= 0) {
+                    Instantiate(tagPress, transform.position + Vector3.forward, Quaternion.identity);
                     //If this character is the current tagger, they try to tag someone in front of them
                     if(ItManager.Instance.Tagger == this) {
                         tagDelayCurTime = tagDelay;
