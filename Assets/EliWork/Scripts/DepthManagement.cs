@@ -8,8 +8,11 @@ public class DepthManagement : MonoBehaviour
     void Start() {
         allObjects = new List<SpriteRenderer>(FindObjectsOfType<SpriteRenderer>());
         for(int i = allObjects.Count - 1; i >= 0; i--) {
-            if(allObjects[i].gameObject.layer == 7) {
-                allObjects[i].transform.position += new Vector3(0, 0, 100);
+            if(allObjects[i].gameObject.layer == 7 || allObjects[i].CompareTag("Ground")) {
+                //allObjects[i].transform.position += new Vector3(0, 0, 100);
+                allObjects.RemoveAt(i);
+            }
+            else if(allObjects[i].GetComponent<DepthSortStart>() != null) {
                 allObjects.RemoveAt(i);
             }
         }

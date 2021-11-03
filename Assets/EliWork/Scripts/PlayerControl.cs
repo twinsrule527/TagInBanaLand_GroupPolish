@@ -34,7 +34,9 @@ public class PlayerControl : MonoBehaviour
         }
     }
     private bool onDifficultTerrain;//Whether the player is on terrain that's harder to move on
+    private bool onWater;//Water is extremely difficult terain
     [SerializeField] private float difficultTerrainSpeedModifier;
+    [SerializeField] private float waterTerrainSpeedModifier;
     private bool onSlipperyTerrain;//WHether the player is standing on slippery terrain
     [SerializeField] private float slipFriction;//The friction multiplier when on slippery terrain
     [SerializeField] private float normalFriction;
@@ -94,6 +96,14 @@ public class PlayerControl : MonoBehaviour
     //General references variables
     private Rigidbody2D myBody;
     private Animator myAnimator;
+    public Animator MyAnimator {
+        get {
+            return myAnimator;
+        }
+        set {
+            myAnimator = value;
+        }
+    }
     private SpriteRenderer mySprite;
     public SpriteRenderer MySprite {
         get {
@@ -153,6 +163,9 @@ public class PlayerControl : MonoBehaviour
                 if(onDifficultTerrain) {
                     _curVelocity *= difficultTerrainSpeedModifier;
                 }
+                if(onWater) {
+                    _curVelocity *= waterTerrainSpeedModifier;
+                }
                 //Sets their animation depending on the direction they're facing in
                 if(movementInput == Vector2.zero) {
                     myAnimator.SetInteger("direction", 0);
@@ -179,6 +192,9 @@ public class PlayerControl : MonoBehaviour
                 _curVelocity = moveSpeed;
                 if(onDifficultTerrain) {
                     _curVelocity *= difficultTerrainSpeedModifier;
+                }
+                if(onWater) {
+                    _curVelocity *= waterTerrainSpeedModifier;
                 }
                 if(movementInput == Vector2.zero) {
                     myAnimator.SetInteger("direction", 0);
@@ -234,7 +250,11 @@ public class PlayerControl : MonoBehaviour
         }
 
     }
-
+    //Fixes its depth at late update
+    [SerializeField] private float depthYOffset;
+    void LateUpdate() {
+        transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.y + depthYOffset);
+    }
     void FixedUpdate() {
         myBody.velocity = _curVelocity;
     }
@@ -259,12 +279,14 @@ public class PlayerControl : MonoBehaviour
         }
     }
 
+    [SerializeField] private GameObject tagPress;    
     public void OnTag(InputAction.CallbackContext ctx) {
         if(ctx.performed) {
             //Can't do anything when frozen
             if(!frozen) {
                 //Only can tag if their tag delay has been reset
                 if(tagDelayCurTime <= 0) {
+                    Instantiate(tagPress, transform.position + Vector3.forward, Quaternion.identity);
                     //If this character is the current tagger, they try to tag someone in front of them
                     if(ItManager.Instance.Tagger == this) {
                         tagDelayCurTime = tagDelay;
@@ -333,6 +355,9 @@ public class PlayerControl : MonoBehaviour
                 tripActive = true;
             }
         }
+        else if(collider.CompareTag("Water")) {
+            onWater = true;
+        }
     }
 
     void OnTriggerExit2D(Collider2D collider) {
@@ -343,6 +368,9 @@ public class PlayerControl : MonoBehaviour
         }
         else if(collider.CompareTag("TripTrigger")) {
             tripActive = false;
+        }
+        else if(collider.CompareTag("Water")) {
+            onWater = false;
         }
     }
 
@@ -380,7 +408,6 @@ public class PlayerControl : MonoBehaviour
         myAnimator.Play("JumpState", 0);
         float halfJumpTime = maxJumpTime / 2f;
         float baseJumpVel = maxJumpHeight / (halfJumpTime) - jumpGravityAcc * halfJumpTime/ 2f;
-        Debug.Log(baseJumpVel);
         float curTime = 0;
         float jumpYPos = spriteBaseY;
         while(curTime < maxJumpTime) {

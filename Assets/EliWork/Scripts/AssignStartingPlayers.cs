@@ -13,7 +13,7 @@ public class AssignStartingPlayers : MonoBehaviour
     void Awake()
     {
         CreatePlayer("KeyboardLeft", Keyboard.current);
-        CreatePlayer("KeyboardRight", Keyboard.current);
+        CreatePlayer("KeyboardRight2", Keyboard.current);
         var gamepads = Gamepad.all;
         foreach(Gamepad pad in gamepads) {
             CreatePlayer("Gamepad", pad);
@@ -41,6 +41,14 @@ public class AssignStartingPlayers : MonoBehaviour
         }
         if(!secondKeyboardExists) {
             CreatePlayer("KeyboardRight", Keyboard.current);
+        }
+    }
+
+    void Update() {
+
+        //Restart when P is pressed
+        if(Input.GetKeyDown(KeyCode.P)) {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(0);
         }
     }
 
