@@ -3,16 +3,23 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - PlayerTag
+  - DifficultTerrain
+  - TripTrigger
+  - Shadow
+  - Throwable
+  - Ground
+  - Water
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Jump
   - Water
   - UI
-  - 
-  - 
+  - Fence
+  - Ground
   - 
   - 
   - 
