@@ -11,6 +11,8 @@ TagManager:
   - Throwable
   - Ground
   - Water
+  - Dust
+  - OtherParticles
   layers:
   - Default
   - TransparentFX
