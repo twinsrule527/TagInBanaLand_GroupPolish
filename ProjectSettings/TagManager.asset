@@ -12,6 +12,8 @@ TagManager:
   - Ground
   - Water
   - Slippery
+  - Dust
+  - OtherParticles
   layers:
   - Default
   - TransparentFX
