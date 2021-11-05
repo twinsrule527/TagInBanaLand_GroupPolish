@@ -20,7 +20,7 @@ public class Particles : MonoBehaviour
         
     }
 
-    void Update()
+    /*void Update()
     {
         if(Input.GetKeyDown(KeyCode.F)){
             EmitTagStars();
@@ -29,7 +29,7 @@ public class Particles : MonoBehaviour
             EmitTagSlim();
         }
         
-    }
+    }*/
     public void EmitDust(){
        if(Time.frameCount%4==0){
             GameObject a = Instantiate(dustParticles, emitSpot.transform.position, Quaternion.identity) as GameObject;

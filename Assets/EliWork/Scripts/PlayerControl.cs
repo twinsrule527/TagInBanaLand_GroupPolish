@@ -113,8 +113,14 @@ public class PlayerControl : MonoBehaviour
         }
     }
     private BoxCollider2D myTagCollider;
+    private Particles myParticles;//The particle emitter attached to this player's child
 
-    
+    //Audio sources attached to the player
+    [Header("Audio")]
+    [SerializeField] private AudioSource TagSound;
+    [SerializeField] private AudioSource JumpSound;
+    [SerializeField] private AudioSource FallSound;
+
     void Start()
     {
         myBody = GetComponent<Rigidbody2D>();
@@ -122,7 +128,7 @@ public class PlayerControl : MonoBehaviour
         mySprite = GetComponentInChildren<SpriteRenderer>();
         myTagCollider = GetComponentInChildren<BoxCollider2D>();
         spriteBaseY = mySprite.transform.position.y;
-
+        myParticles = GetComponentInChildren<Particles>();
     }
     void Update()
     {
@@ -167,9 +173,20 @@ public class PlayerControl : MonoBehaviour
                 _curVelocity = moveSpeed;
                 if(onDifficultTerrain) {
                     _curVelocity *= difficultTerrainSpeedModifier;
+                    if(movementInput != Vector2.zero) {
+                        myParticles.EmitTagGrass();
+                    }
                 }
                 if(onWater) {
                     _curVelocity *= waterTerrainSpeedModifier;
+                    if(movementInput != Vector2.zero) {
+                        myParticles.EmitTagWater();
+                    }
+                }
+                if(onSlipperyTerrain) {
+                    if(moveSpeed != Vector2.zero) {
+                        myParticles.EmitTagSlim();
+                    }
                 }
                 //Sets their animation depending on the direction they're facing in
                 if(movementInput == Vector2.zero) {
@@ -186,6 +203,8 @@ public class PlayerControl : MonoBehaviour
                         myAnimator.SetInteger("direction", -1);
                         mySprite.flipX = true;
                     }
+                    //Currently, dust is emitted as long as you are moving
+                    myParticles.EmitDust();
                 }
             }
             //Once the person is able to move again after having been thrown, they have only a little bit of control at first
@@ -256,6 +275,7 @@ public class PlayerControl : MonoBehaviour
 
     }
     //Fixes its depth at late update
+    [Header("Other Variables")]
     [SerializeField] private float depthYOffset;
     void LateUpdate() {
         transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.y + depthYOffset);
@@ -278,13 +298,14 @@ public class PlayerControl : MonoBehaviour
                 if(!IsJumping) {
                     //jumpTime = maxJumpTime;
                     //myAnimator.SetBool("jumping", true);
+                    //JumpSound.Play();//SOUND
                     StartCoroutine("JumpCoroutine");
                 }
             }
         }
     }
 
-    [SerializeField] private GameObject tagPress;    
+    //[SerializeField] private GameObject tagPress;    
     public void OnTag(InputAction.CallbackContext ctx) {
         if(ctx.performed) {
             //Can't do anything when frozen
@@ -309,6 +330,10 @@ public class PlayerControl : MonoBehaviour
                         }
                         //Then, if the tagbox still has a player in it, it chooses the closest one to tag
                         if(TagBox.Count > 0) {
+                            //IMPORTANT: Currently the player who tags is the one who emits stars - do we want it to be the other way around?
+                            myParticles.EmitTagStars();
+                            //Makes a tag sound
+                            //TagSound.Play(); SOUND
                             ItManager.Instance.SetTagger(TagBox[0].collider.gameObject);
                             //Stays fast for a short while
                             prevTaggerTime = prevTaggerSpeedBonusTime;
@@ -334,6 +359,9 @@ public class PlayerControl : MonoBehaviour
                             }
                             //Then, if the list isn't empty, it attempts to throw the nearest object
                             if(TagBox.Count > 0) {
+                                //IMPORTANT: Currently the player who throws is the one who emits stars - do we want it to be the other way around?
+                                myParticles.EmitTagStars();
+                                //TagSound.Play();
                                 throwDelayCurTime = throwDelaySuccesful;
                                 IEnumerator ThrowCoroutine;
                                 if(TagBox[0].collider.CompareTag("PlayerTag")) {
@@ -446,6 +474,7 @@ public class PlayerControl : MonoBehaviour
             myBody.velocity = moveSpeed;
             frozen = true;
             myAnimator.Play("FallState", 0);
+            //FallSound.Play();//SOUND
             yield return new WaitForSeconds(maxFallTime);
             frozen = false;
         }
