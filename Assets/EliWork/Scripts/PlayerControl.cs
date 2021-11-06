@@ -120,6 +120,7 @@ public class PlayerControl : MonoBehaviour
     [SerializeField] private AudioSource TagSound;
     [SerializeField] private AudioSource JumpSound;
     [SerializeField] private AudioSource FallSound;
+    [SerializeField] private AudioSource ThrowSound;
 
     void Start()
     {
@@ -298,7 +299,7 @@ public class PlayerControl : MonoBehaviour
                 if(!IsJumping) {
                     //jumpTime = maxJumpTime;
                     //myAnimator.SetBool("jumping", true);
-                    //JumpSound.Play();//SOUND
+                    JumpSound.Play();//SOUND
                     StartCoroutine("JumpCoroutine");
                 }
             }
@@ -312,6 +313,8 @@ public class PlayerControl : MonoBehaviour
             if(!frozen) {
                 //Only can tag if their tag delay has been reset
                 if(tagDelayCurTime <= 0) {
+                    //It always makes the tag action - even if it fails
+                    myAnimator.Play("TagState");
                     //Instantiate(tagPress, transform.position + Vector3.forward, Quaternion.identity);
                     //If this character is the current tagger, they try to tag someone in front of them
                     if(ItManager.Instance.Tagger == this) {
@@ -333,7 +336,7 @@ public class PlayerControl : MonoBehaviour
                             //IMPORTANT: Currently the player who tags is the one who emits stars - do we want it to be the other way around?
                             myParticles.EmitTagStars();
                             //Makes a tag sound
-                            //TagSound.Play(); SOUND
+                            TagSound.Play(); //SOUND
                             ItManager.Instance.SetTagger(TagBox[0].collider.gameObject);
                             //Stays fast for a short while
                             prevTaggerTime = prevTaggerSpeedBonusTime;
@@ -361,7 +364,7 @@ public class PlayerControl : MonoBehaviour
                             if(TagBox.Count > 0) {
                                 //IMPORTANT: Currently the player who throws is the one who emits stars - do we want it to be the other way around?
                                 myParticles.EmitTagStars();
-                                //TagSound.Play();
+                                ThrowSound.Play();//SOUND
                                 throwDelayCurTime = throwDelaySuccesful;
                                 IEnumerator ThrowCoroutine;
                                 if(TagBox[0].collider.CompareTag("PlayerTag")) {
@@ -474,7 +477,7 @@ public class PlayerControl : MonoBehaviour
             myBody.velocity = moveSpeed;
             frozen = true;
             myAnimator.Play("FallState", 0);
-            //FallSound.Play();//SOUND
+            FallSound.Play();//SOUND
             yield return new WaitForSeconds(maxFallTime);
             frozen = false;
         }
