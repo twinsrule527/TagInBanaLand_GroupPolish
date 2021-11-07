@@ -11,6 +11,10 @@ public class HeadIcon : MonoBehaviour
     void Start() {
         mySpriteRenderer = GetComponent<SpriteRenderer>();
     }
+
+    void Update() {
+        transform.position = new Vector3(transform.position.x, transform.position.y, Camera.main.transform.position.z + 10);
+    }
     public void ChangeParent(Transform newParent)
     {
         //If being set to have no parent, it becomes invisible

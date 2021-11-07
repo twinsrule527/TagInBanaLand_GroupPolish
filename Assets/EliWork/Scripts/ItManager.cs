@@ -33,6 +33,9 @@ public class ItManager : Singleton<ItManager>
     [SerializeField] private List<HeadIcon> scoreIcons;//Each score icon is a multiplier - only included w/ 3-4 players
 
     private PlayerControl[] players;//An array of all players
+
+    [SerializeField] private AudioSource startSound;//A sound which plays when the game starts
+    [SerializeField] private Vector3 playerStartPos;//The starting position of the players
     void Start()
     {
         StartCoroutine("StartGame");
@@ -117,7 +120,7 @@ public class ItManager : Singleton<ItManager>
         //A haphazard way to get all the players, in the correct order
         foreach(PlayerInput player in playersUnorder) {
             //THIS IS A TEMPORARY MEASURE BC SOMETHING's GOING WRONG W/ THE CAMERA
-            player.transform.position = Vector3.up * 20;
+            player.transform.position = playerStartPos;
             if(player.currentControlScheme == "KeyboardLeft") {
                 allPlayers.Add(player.GetComponent<PlayerControl>());
             }
@@ -159,7 +162,8 @@ public class ItManager : Singleton<ItManager>
     }
 
     private IEnumerator StartGame() {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
+        startSound.Play();
         ChooseTagger();
         yield return null;
     }
