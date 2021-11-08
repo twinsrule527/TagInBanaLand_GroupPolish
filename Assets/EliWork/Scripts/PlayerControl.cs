@@ -42,6 +42,7 @@ public class PlayerControl : MonoBehaviour
     [SerializeField] private float normalFriction;
     private float prevTaggerTime;//How long since last been tagger - used to get speed boost
     [SerializeField] private float prevTaggerSpeedBonusTime;
+
     
     //Jumping-related Variables
     [Header("Jumping")]
@@ -114,7 +115,9 @@ public class PlayerControl : MonoBehaviour
     }
     private BoxCollider2D myTagCollider;
     private Particles myParticles;//The particle emitter attached to this player's child
-
+    [Header("ParticleStuff")]
+    [SerializeField] private float dustParticleOffset;//How much the dust particles are offset from the direction you're moving
+    [SerializeField] private float starParticleYOffset;//How much above the emitSpot vertically will stars spawn
     //Audio sources attached to the player
     [Header("Audio")]
     [SerializeField] private AudioSource TagSound;
@@ -205,7 +208,8 @@ public class PlayerControl : MonoBehaviour
                         mySprite.flipX = true;
                     }
                     //Currently, dust is emitted as long as you are moving
-                    myParticles.EmitDust();
+                    Vector3 dustSpawnPos = myParticles.transform.position - (Vector3)tagDirection * dustParticleOffset;
+                    myParticles.EmitDust(dustSpawnPos);
                 }
             }
             //Once the person is able to move again after having been thrown, they have only a little bit of control at first
@@ -334,7 +338,9 @@ public class PlayerControl : MonoBehaviour
                         //Then, if the tagbox still has a player in it, it chooses the closest one to tag
                         if(TagBox.Count > 0) {
                             //IMPORTANT: Currently the player who tags is the one who emits stars - do we want it to be the other way around?
-                            myParticles.EmitTagStars();
+                            //Gets a position half-way between you and the thrown player, to emit particles
+                            Vector3 starSpawnPos = Vector3.Lerp(transform.position, TagBox[0].collider.gameObject.transform.parent.position, 0.75f) + Vector3.up * starParticleYOffset;
+                            myParticles.EmitTagStars(starSpawnPos);
                             //Makes a tag sound
                             TagSound.Play(); //SOUND
                             ItManager.Instance.SetTagger(TagBox[0].collider.gameObject);
@@ -363,7 +369,9 @@ public class PlayerControl : MonoBehaviour
                             //Then, if the list isn't empty, it attempts to throw the nearest object
                             if(TagBox.Count > 0) {
                                 //IMPORTANT: Currently the player who throws is the one who emits stars - do we want it to be the other way around?
-                                myParticles.EmitTagStars();
+                                //Gets a position half-way between you and the thrown player, to emit particles
+                                Vector3 starSpawnPos = Vector3.Lerp(transform.position, TagBox[0].collider.gameObject.transform.parent.position, 0.8f) + Vector3.up * starParticleYOffset;
+                                myParticles.EmitTagStars(starSpawnPos);
                                 ThrowSound.Play();//SOUND
                                 throwDelayCurTime = throwDelaySuccesful;
                                 IEnumerator ThrowCoroutine;

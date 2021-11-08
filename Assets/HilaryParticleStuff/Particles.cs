@@ -30,13 +30,14 @@ public class Particles : MonoBehaviour
         }
         
     }*/
-    public void EmitDust(){
+    //Dust and Stars now need to be given a position to emit the particles
+    public void EmitDust(Vector3 pos){
        if(Time.frameCount%4==0){
-            GameObject a = Instantiate(dustParticles, emitSpot.transform.position, Quaternion.identity) as GameObject;
+            GameObject a = Instantiate(dustParticles, pos, Quaternion.identity) as GameObject;
        }
    }
-   public void EmitTagStars(){
-       GameObject p = Instantiate(star, emitSpot.transform.position, Quaternion.identity) as GameObject;
+   public void EmitTagStars(Vector3 pos){
+       GameObject p = Instantiate(star, pos, Quaternion.identity) as GameObject;
    }
    public void EmitTagGrass(){
        if(Time.frameCount%4==0){

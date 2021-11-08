@@ -158,7 +158,7 @@ MonoBehaviour:
   acceleration: 15
   difficultTerrainSpeedModifier: 0.6
   waterTerrainSpeedModifier: 0.3
-  slipFriction: 0.95
+  slipFriction: 0.97
   normalFriction: 0.7
   prevTaggerSpeedBonusTime: 2
   maxJumpTime: 0.6
@@ -180,6 +180,8 @@ MonoBehaviour:
   thrownObjMassMultiplier: 1000
   thrownObjTime: 1
   thrownFriction: 0.9
+  dustParticleOffset: 0.2
+  starParticleYOffset: 1
   TagSound: {fileID: 6297947776282137413}
   JumpSound: {fileID: 1133894008033277980}
   FallSound: {fileID: 7013193402503018790}
@@ -728,7 +730,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4712731556564816510}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.24, z: 1}
+  m_LocalPosition: {x: 0, y: -0.24, z: 0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2276021198055322282}
