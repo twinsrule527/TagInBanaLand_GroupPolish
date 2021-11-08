@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 public class PlayerControl : MonoBehaviour
 {
     public int PlayerNumber;
+    public InputDevice myInput;//Declares the type of Input th
     [HideInInspector] public bool frozen;//When true, player input doesn't do anything
 
     //Movement-related Variables
@@ -430,6 +431,14 @@ public class PlayerControl : MonoBehaviour
 
     //When a player is tagged, they become locked and unable to move a portion of time
     public IEnumerator WhenTagged() {
+        //When tagged, if you are a gamepad user, you get some haptic feedback (trying this out)
+        Gamepad myGamepad = null;
+        if(myInput.description.deviceClass == "Gamepad") {
+            Debug.Log("Gamepad");
+            myGamepad = (Gamepad)myInput;
+            myGamepad.SetMotorSpeeds(0.5f, 0.5f);
+            myGamepad.ResumeHaptics();
+        }
         _curVelocity = Vector2.zero;
         frozen = true;
         myAnimator.Play("FallState", 0);
@@ -439,6 +448,10 @@ public class PlayerControl : MonoBehaviour
             yield return null;
             mySprite.color = Color.Lerp(currentColorTag, newColorTag, curTime / tagFreezeTime);
             curTime += Time.deltaTime;
+        }
+        //Ends the haptic feedback
+        if(myGamepad != null) {
+            myGamepad.PauseHaptics();
         }
         mySprite.color = newColorTag;
         frozen = false;
