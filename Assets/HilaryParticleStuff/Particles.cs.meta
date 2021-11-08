@@ -3,7 +3,13 @@ guid: 227926316edd24f3fa3e5a1f8eebbdf5
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - dustParticles: {fileID: 255736217404775928, guid: 307e38e835d4b4594979a3f3c7e2a809, type: 3}
+  - emitSpot: {instanceID: 0}
+  - star: {fileID: 3596127705416172541, guid: 0d7930045040c4a9c8a31b47cd2e4f7e, type: 3}
+  - grass: {fileID: 6815935158838821658, guid: e8e119892c9104e15962b0d0af9bf981, type: 3}
+  - water: {fileID: 8043787440330724739, guid: c9e2305bb0781497e8eca5beb91f1888, type: 3}
+  - slim: {fileID: 7905478493888210207, guid: b0c54272fddb848e493adae09e62d6c7, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
