@@ -31,25 +31,25 @@ public class SimpleMovement : MonoBehaviour
        if (Input.GetKey(rightKey))
        {
             movement += Vector2.right;
-            Particles.Instance.EmitDust();  
+            Particles.Instance.EmitDust(Particles.Instance.transform.position);  
             Particles.Instance.EmitTagGrass(); 
        }
        if (Input.GetKey(leftKey))
        {
            movement += Vector2.left;
-            Particles.Instance.EmitDust(); 
+            Particles.Instance.EmitDust(Particles.Instance.transform.position); 
             Particles.Instance.EmitTagGrass(); 
        }
         if (Input.GetKey(upKey))
        {
            movement += Vector2.up;
-            Particles.Instance.EmitDust(); 
+            Particles.Instance.EmitDust(Particles.Instance.transform.position); 
             Particles.Instance.EmitTagGrass(); 
        }
         if (Input.GetKey(downKey))
        {
            movement += Vector2.down;
-           Particles.Instance.EmitDust(); 
+           Particles.Instance.EmitDust(Particles.Instance.transform.position); 
            Particles.Instance.EmitTagGrass(); 
        }
    }

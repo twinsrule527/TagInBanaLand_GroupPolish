@@ -8,6 +8,6 @@ public class ShadowPos : MonoBehaviour
     [SerializeField] private Transform characterTransform;
     void LateUpdate()
     {
-        transform.position = new Vector3(transform.parent.position.x, transform.parent.position.y + y_offset, characterTransform.position.z +0.1f);
+        transform.position = new Vector3(transform.parent.position.x, transform.parent.position.y + y_offset, characterTransform.position.z +1f);
     }
 }
