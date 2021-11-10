@@ -12,11 +12,14 @@ public class AssignStartingPlayers : MonoBehaviour
     [SerializeField] private float cameraCharacterWeight;
     void Awake()
     {
-        CreatePlayer("KeyboardLeft", Keyboard.current);
-        CreatePlayer("KeyboardRight2", Keyboard.current);
+        PlayerInput newPlayer = CreatePlayer("KeyboardLeft", Keyboard.current);
+        newPlayer.GetComponent<PlayerControl>().myInput = Keyboard.current;
+        newPlayer = CreatePlayer("KeyboardRight2", Keyboard.current);
+        newPlayer.GetComponent<PlayerControl>().myInput = Keyboard.current;
         var gamepads = Gamepad.all;
         foreach(Gamepad pad in gamepads) {
-            CreatePlayer("Gamepad", pad);
+            newPlayer = CreatePlayer("Gamepad", pad);
+            //newPlayer.GetComponent<PlayerControl>().myInput = pad;
         }
         PlayerControl[] allPlayers = FindObjectsOfType<PlayerControl>();
         foreach(PlayerControl player in allPlayers) {
@@ -25,9 +28,12 @@ public class AssignStartingPlayers : MonoBehaviour
         //Ignores collisions between the player when they jump and any objects they can jump over
         Physics2D.IgnoreLayerCollision(3, 6, true);
     }
-    void CreatePlayer(string controlScheme = null, InputDevice newDevice = null) {
+    PlayerInput CreatePlayer(string controlScheme = null, InputDevice newDevice = null) {
         if(InputManager.playerCount < maxPlayers) {
-            InputManager.JoinPlayer(InputManager.playerCount, InputManager.playerCount, controlScheme, newDevice);
+            return InputManager.JoinPlayer(InputManager.playerCount, InputManager.playerCount, controlScheme, newDevice);
+        }
+        else {
+            return null;
         }
     }
 
@@ -35,19 +41,20 @@ public class AssignStartingPlayers : MonoBehaviour
         List<PlayerInput> currentPlayers = new List<PlayerInput>(FindObjectsOfType<PlayerInput>());
         bool secondKeyboardExists = false;
         foreach(PlayerInput player in currentPlayers) {
-            if(player.currentControlScheme == "KeyboardRight") {
+            if(player.currentControlScheme == "KeyboardRight2") {
                 secondKeyboardExists = true;
             }
         }
         if(!secondKeyboardExists) {
-            CreatePlayer("KeyboardRight", Keyboard.current);
+            PlayerInput newPlayer = CreatePlayer("KeyboardRight2", Keyboard.current);
+            newPlayer.GetComponent<PlayerControl>().myInput = Keyboard.current;
         }
     }
 
     void Update() {
 
-        //Restart when P is pressed
-        if(Input.GetKeyDown(KeyCode.P)) {
+        //Restart when R is pressed
+        if(Input.GetKeyDown(KeyCode.R)) {
             UnityEngine.SceneManagement.SceneManager.LoadScene(0);
         }
     }

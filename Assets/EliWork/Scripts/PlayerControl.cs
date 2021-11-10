@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 public class PlayerControl : MonoBehaviour
 {
     public int PlayerNumber;
+    public InputDevice myInput;//Declares the type of Input th
     [HideInInspector] public bool frozen;//When true, player input doesn't do anything
 
     //Movement-related Variables
@@ -40,6 +41,9 @@ public class PlayerControl : MonoBehaviour
     private bool onSlipperyTerrain;//WHether the player is standing on slippery terrain
     [SerializeField] private float slipFriction;//The friction multiplier when on slippery terrain
     [SerializeField] private float normalFriction;
+    private float prevTaggerTime;//How long since last been tagger - used to get speed boost
+    [SerializeField] private float prevTaggerSpeedBonusTime;
+
     
     //Jumping-related Variables
     [Header("Jumping")]
@@ -111,8 +115,17 @@ public class PlayerControl : MonoBehaviour
         }
     }
     private BoxCollider2D myTagCollider;
+    private Particles myParticles;//The particle emitter attached to this player's child
+    [Header("ParticleStuff")]
+    [SerializeField] private float dustParticleOffset;//How much the dust particles are offset from the direction you're moving
+    [SerializeField] private float starParticleYOffset;//How much above the emitSpot vertically will stars spawn
+    //Audio sources attached to the player
+    [Header("Audio")]
+    [SerializeField] private AudioSource TagSound;
+    [SerializeField] private AudioSource JumpSound;
+    [SerializeField] private AudioSource FallSound;
+    [SerializeField] private AudioSource ThrowSound;
 
-    
     void Start()
     {
         myBody = GetComponent<Rigidbody2D>();
@@ -120,7 +133,7 @@ public class PlayerControl : MonoBehaviour
         mySprite = GetComponentInChildren<SpriteRenderer>();
         myTagCollider = GetComponentInChildren<BoxCollider2D>();
         spriteBaseY = mySprite.transform.position.y;
-
+        myParticles = GetComponentInChildren<Particles>();
     }
     void Update()
     {
@@ -148,9 +161,12 @@ public class PlayerControl : MonoBehaviour
                 //Increases the player's movement by the direction they're moving
                 moveSpeed += movementInput * acceleration * Time.deltaTime;
                 //The tagger can move faster than other players
-                if(ItManager.Instance.Tagger == this) {
+                if(ItManager.Instance.Tagger == this || prevTaggerTime > 0) {
                     if(moveSpeed.magnitude > taggerMaxSpeed) {
                         moveSpeed = moveSpeed.normalized * taggerMaxSpeed;
+                    }
+                    if(prevTaggerTime > 0) {
+                        prevTaggerTime -= Time.deltaTime;
                     }
                 }
                 else {
@@ -162,9 +178,20 @@ public class PlayerControl : MonoBehaviour
                 _curVelocity = moveSpeed;
                 if(onDifficultTerrain) {
                     _curVelocity *= difficultTerrainSpeedModifier;
+                    if(movementInput != Vector2.zero) {
+                        myParticles.EmitTagGrass();
+                    }
                 }
                 if(onWater) {
                     _curVelocity *= waterTerrainSpeedModifier;
+                    if(movementInput != Vector2.zero) {
+                        myParticles.EmitTagWater();
+                    }
+                }
+                if(onSlipperyTerrain) {
+                    if(moveSpeed != Vector2.zero) {
+                        myParticles.EmitTagSlim();
+                    }
                 }
                 //Sets their animation depending on the direction they're facing in
                 if(movementInput == Vector2.zero) {
@@ -181,6 +208,9 @@ public class PlayerControl : MonoBehaviour
                         myAnimator.SetInteger("direction", -1);
                         mySprite.flipX = true;
                     }
+                    //Currently, dust is emitted as long as you are moving
+                    Vector3 dustSpawnPos = myParticles.transform.position - (Vector3)tagDirection * dustParticleOffset;
+                    myParticles.EmitDust(dustSpawnPos);
                 }
             }
             //Once the person is able to move again after having been thrown, they have only a little bit of control at first
@@ -251,6 +281,7 @@ public class PlayerControl : MonoBehaviour
 
     }
     //Fixes its depth at late update
+    [Header("Other Variables")]
     [SerializeField] private float depthYOffset;
     void LateUpdate() {
         transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.y + depthYOffset);
@@ -273,20 +304,23 @@ public class PlayerControl : MonoBehaviour
                 if(!IsJumping) {
                     //jumpTime = maxJumpTime;
                     //myAnimator.SetBool("jumping", true);
+                    JumpSound.Play();//SOUND
                     StartCoroutine("JumpCoroutine");
                 }
             }
         }
     }
 
-    [SerializeField] private GameObject tagPress;    
+    //[SerializeField] private GameObject tagPress;    
     public void OnTag(InputAction.CallbackContext ctx) {
         if(ctx.performed) {
             //Can't do anything when frozen
             if(!frozen) {
                 //Only can tag if their tag delay has been reset
                 if(tagDelayCurTime <= 0) {
-                    Instantiate(tagPress, transform.position + Vector3.forward, Quaternion.identity);
+                    //It always makes the tag action - even if it fails
+                    myAnimator.Play("TagState");
+                    //Instantiate(tagPress, transform.position + Vector3.forward, Quaternion.identity);
                     //If this character is the current tagger, they try to tag someone in front of them
                     if(ItManager.Instance.Tagger == this) {
                         tagDelayCurTime = tagDelay;
@@ -304,7 +338,16 @@ public class PlayerControl : MonoBehaviour
                         }
                         //Then, if the tagbox still has a player in it, it chooses the closest one to tag
                         if(TagBox.Count > 0) {
+                            //IMPORTANT: Currently the player who tags is the one who emits stars - do we want it to be the other way around?
+                            //Gets a position half-way between you and the thrown player, to emit particles
+                            Vector3 starSpawnPos = Vector3.Lerp(transform.position, TagBox[0].collider.gameObject.transform.parent.position, 0.75f) + Vector3.up * starParticleYOffset;
+                            myParticles.EmitTagStars(starSpawnPos);
+                            //Makes a tag sound
+                            TagSound.Play(); //SOUND
                             ItManager.Instance.SetTagger(TagBox[0].collider.gameObject);
+                            //Stays fast for a short while
+                            prevTaggerTime = prevTaggerSpeedBonusTime;
+                            tagDelayCurTime = tagFreezeBaseTime;
                         }
                     }
 
@@ -326,6 +369,11 @@ public class PlayerControl : MonoBehaviour
                             }
                             //Then, if the list isn't empty, it attempts to throw the nearest object
                             if(TagBox.Count > 0) {
+                                //IMPORTANT: Currently the player who throws is the one who emits stars - do we want it to be the other way around?
+                                //Gets a position half-way between you and the thrown player, to emit particles
+                                Vector3 starSpawnPos = Vector3.Lerp(transform.position, TagBox[0].collider.gameObject.transform.parent.position, 0.8f) + Vector3.up * starParticleYOffset;
+                                myParticles.EmitTagStars(starSpawnPos);
+                                ThrowSound.Play();//SOUND
                                 throwDelayCurTime = throwDelaySuccesful;
                                 IEnumerator ThrowCoroutine;
                                 if(TagBox[0].collider.CompareTag("PlayerTag")) {
@@ -358,6 +406,9 @@ public class PlayerControl : MonoBehaviour
         else if(collider.CompareTag("Water")) {
             onWater = true;
         }
+        else if(collider.CompareTag("Slippery")) {
+            onSlipperyTerrain = true;
+        }
     }
 
     void OnTriggerExit2D(Collider2D collider) {
@@ -372,13 +423,25 @@ public class PlayerControl : MonoBehaviour
         else if(collider.CompareTag("Water")) {
             onWater = false;
         }
+        else if(collider.CompareTag("Slippery")) {
+            onSlipperyTerrain = false;
+        }
     }
 
 
     //When a player is tagged, they become locked and unable to move a portion of time
     public IEnumerator WhenTagged() {
+        //When tagged, if you are a gamepad user, you get some haptic feedback (trying this out)
+        Gamepad myGamepad = null;
+        if(myInput.description.deviceClass == "Gamepad") {
+            Debug.Log("Gamepad");
+            myGamepad = (Gamepad)myInput;
+            myGamepad.SetMotorSpeeds(0.5f, 0.5f);
+            myGamepad.ResumeHaptics();
+        }
         _curVelocity = Vector2.zero;
         frozen = true;
+        myAnimator.Play("FallState", 0);
         yield return null;
         float curTime = tagFreezeBaseTime;
         while(curTime < tagFreezeTime) {
@@ -386,8 +449,18 @@ public class PlayerControl : MonoBehaviour
             mySprite.color = Color.Lerp(currentColorTag, newColorTag, curTime / tagFreezeTime);
             curTime += Time.deltaTime;
         }
+        //Ends the haptic feedback
+        if(myGamepad != null) {
+            myGamepad.PauseHaptics();
+        }
         mySprite.color = newColorTag;
         frozen = false;
+        if(moveSpeed == Vector2.zero) {
+            myAnimator.Play("IdleState");
+        }
+        else {
+            myAnimator.Play("RunSideState");
+        }
     }
 
     //When a player tags another, their color changes back
@@ -425,6 +498,7 @@ public class PlayerControl : MonoBehaviour
             myBody.velocity = moveSpeed;
             frozen = true;
             myAnimator.Play("FallState", 0);
+            FallSound.Play();//SOUND
             yield return new WaitForSeconds(maxFallTime);
             frozen = false;
         }
@@ -441,6 +515,13 @@ public class PlayerControl : MonoBehaviour
         PlayerControl thrownControl = player.GetComponent<PlayerControl>();
         //When you throw a player, there is a short period of time where they are just pushed back unable to move
         thrownControl.CurVelocity = direction * throwPlayerInitialSpeed;
+        thrownControl.myAnimator.Play("Thrown", 0);
+        if(direction.x > 0) {
+            thrownControl.MySprite.flipX = true;
+        }
+        else {
+            thrownControl.mySprite.flipX = false;
+        }
         thrownControl.IsJumping = true;
         thrownControl.IsThrown = true;
         player.layer = 3;//They're put on the jumping layer
@@ -449,6 +530,7 @@ public class PlayerControl : MonoBehaviour
         thrownControl.IsJumping = false;
         player.layer = 0;
         thrownControl.MoveSpeed = thrownControl.CurVelocity;
+        thrownControl.myAnimator.Play("IdleState", 0);
         yield return new WaitForSeconds(thrownPlayerUnfrozenTime);
         //Eventually, they gain full control again
         thrownControl.IsThrown = false;
