@@ -35,6 +35,8 @@ public class ItManager : Singleton<ItManager>
     private PlayerControl[] players;//An array of all players
 
     [SerializeField] private AudioSource startSound;//A sound which plays when the game starts
+    [SerializeField] private AudioSource fanfareSound;
+    [SerializeField] private float fanfareLength;//The length of the fanfare, in seconds
     [SerializeField] private Vector3 playerStartPos;//The starting position of the players
     void Start()
     {
@@ -50,20 +52,6 @@ public class ItManager : Singleton<ItManager>
 
     void Update()
     {
-        curTime -= Time.deltaTime;
-        if(curTime <= 0) {
-            //WHen the timer reaches zero, the game ends
-            EndGame();
-        }
-        string timeString = (Mathf.FloorToInt(curTime / 60)).ToString() + ":";
-        float secs = Mathf.FloorToInt(curTime%60);
-        if(secs < 10) {
-            timeString += "0" + secs.ToString();
-        }
-        else {
-            timeString += secs.ToString();
-        }
-        timerText.text = timeString;
         //Calculate each player's score
         if(Tagger != null) {
             //Each player gets points - you have a score multiplier if you're closer to it
@@ -111,10 +99,19 @@ public class ItManager : Singleton<ItManager>
                 float displayScore = Mathf.Round(PlayerScores[player.PlayerNumber]);
                 scoreText[player.PlayerNumber].text = displayScore.ToString();
             }*/
+        //And then subtract from the timer
+        curTime -= Time.deltaTime;
+        if(curTime <= 0) {
+            //WHen the timer reaches zero, the game ends
+            EndGame();
+        }
+        string timeString = (Mathf.FloorToInt(curTime).ToString());
+        timerText.text = timeString;
         }
     }
 
-    void ChooseTagger() {
+    //After the beginning fanfare, chooses a tagger
+    private IEnumerator ChooseTagger() {
         List<PlayerInput> playersUnorder = new List<PlayerInput>(FindObjectsOfType<PlayerInput>());
         allPlayers = new List<PlayerControl>();
         //A haphazard way to get all the players, in the correct order
@@ -144,10 +141,20 @@ public class ItManager : Singleton<ItManager>
         for(int i = allPlayers.Count; i < 4; i++) {
             scoreText[i].transform.parent.gameObject.SetActive(false);
         }
+        //Before tagger is chosen, a beginning fanfar occurs
+        fanfareSound.Play();
+        tagIcon.gameObject.SetActive(false);
+        yield return new WaitForSeconds(fanfareLength);
         int rnd = Random.Range(0, allPlayers.Count);
+        tagIcon.gameObject.SetActive(true);
         _tagger = allPlayers[rnd];
         _tagger.MySprite.color = TagColor;
+        _tagger.MyParticles.EmitTagStars(_tagger.transform.position);
+        _tagger.MyParticles.EmitTagStars(_tagger.transform.position);
+        _tagger.MyParticles.EmitTagStars(_tagger.transform.position);
         tagIcon.ChangeParent(_tagger.transform);
+        startSound.Play();
+        yield return null;
     }
 
     public void SetTagger(GameObject taggedPlayer) {
@@ -159,12 +166,32 @@ public class ItManager : Singleton<ItManager>
         _tagger.currentColorTag = _tagger.MySprite.color;
         _tagger.StartCoroutine("WhenTagged");
         tagIcon.ChangeParent(_tagger.transform);
+        StopCoroutine("TagAppear");
+        StartCoroutine("TagAppear");
+    }
+
+    [SerializeField] private Image TagWord;
+    [SerializeField] private float startSize;
+    [SerializeField] private float baseSize;
+    [SerializeField] private float tagWordTimeToGrow;
+    [SerializeField] private float tagWordTimeMaxSize;
+    private IEnumerator TagAppear() {
+        TagWord.gameObject.SetActive(true);
+        Vector3 oneOneOne = new Vector3(1f, 1f, 1f);
+        TagWord.transform.localScale = oneOneOne * startSize;
+        float myTime = 0;
+        while(myTime < tagWordTimeToGrow) {
+            TagWord.transform.localScale = oneOneOne * Mathf.Lerp(startSize, baseSize, myTime / tagWordTimeToGrow);
+            myTime += Time.deltaTime;
+            yield return null;
+        }
+        yield return new WaitForSeconds(tagWordTimeMaxSize);
+        TagWord.gameObject.SetActive(false);
     }
 
     private IEnumerator StartGame() {
-        yield return new WaitForSeconds(0.5f);
-        startSound.Play();
-        ChooseTagger();
+        yield return null;
+        StartCoroutine("ChooseTagger");
         yield return null;
     }
 

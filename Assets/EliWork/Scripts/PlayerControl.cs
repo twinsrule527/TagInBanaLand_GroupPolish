@@ -63,7 +63,7 @@ public class PlayerControl : MonoBehaviour
     //These two variables below are used to determine the player's sprite's jump arc when they jump
     [SerializeField] private float maxJumpHeight;
     [SerializeField] private float jumpGravityAcc;
-    private float spriteBaseY;
+    [SerializeField] private float spriteBaseY;
 
     //tagging-related variables
     [Header("Tagging")]
@@ -88,6 +88,7 @@ public class PlayerControl : MonoBehaviour
     [SerializeField] private float thrownObjMassMultiplier;
     [SerializeField] private float thrownObjTime;
     [SerializeField] private float throwNPCInitialSpeed;
+    [SerializeField] private float thrownNPCTime;
     private bool _isThrown;
     public bool IsThrown {
         get {
@@ -117,6 +118,11 @@ public class PlayerControl : MonoBehaviour
     }
     private BoxCollider2D myTagCollider;
     private Particles myParticles;//The particle emitter attached to this player's child
+    public Particles MyParticles {
+        get {
+            return myParticles;
+        }
+    }
     [Header("ParticleStuff")]
     [SerializeField] private float dustParticleOffset;//How much the dust particles are offset from the direction you're moving
     [SerializeField] private float starParticleYOffset;//How much above the emitSpot vertically will stars spawn
@@ -127,13 +133,15 @@ public class PlayerControl : MonoBehaviour
     [SerializeField] private AudioSource FallSound;
     [SerializeField] private AudioSource ThrowSound;
 
+    //If a gamepad player, they have a gamepad
+    public Gamepad myGamepad;
     void Start()
     {
         myBody = GetComponent<Rigidbody2D>();
         myAnimator = GetComponentInChildren<Animator>();
         mySprite = GetComponentInChildren<SpriteRenderer>();
         myTagCollider = GetComponentInChildren<BoxCollider2D>();
-        spriteBaseY = mySprite.transform.position.y;
+        spriteBaseY = mySprite.transform.position.y - transform.position.y;
         myParticles = GetComponentInChildren<Particles>();
     }
     void Update()
@@ -393,7 +401,7 @@ public class PlayerControl : MonoBehaviour
                                 }
                                 else {
                                     Vector2 throwDirection = (TagBox[0].collider.gameObject.transform.position - transform.position).normalized;
-                                    ThrowCoroutine = ThrowNPC(TagBox[0].collider.gameObject, throwDirection);
+                                    ThrowCoroutine = ThrowNPC(TagBox[0].collider.gameObject.transform.parent.gameObject, throwDirection);
                                 }
                                 StartCoroutine(ThrowCoroutine);
                             }
@@ -443,12 +451,10 @@ public class PlayerControl : MonoBehaviour
     //When a player is tagged, they become locked and unable to move a portion of time
     public IEnumerator WhenTagged() {
         //When tagged, if you are a gamepad user, you get some haptic feedback (trying this out)
-        /*Gamepad myGamepad = null;
-        if(GetComponent<PlayerInput>().currentControlScheme == "Gamepad") {
-            Debug.Log("Gamepad");
-            myGamepad = (Gamepad)myInput;
-            myGamepad.ResumeHaptics();
-        }*/
+        if(myGamepad != null) {
+            IEnumerator buzz = AssignStartingPlayers.BuzzController(myGamepad);
+            StartCoroutine(buzz);
+        }
         _curVelocity = Vector2.zero;
         frozen = true;
         myAnimator.Play("FallState", 0);
@@ -558,6 +564,12 @@ public class PlayerControl : MonoBehaviour
         yield return new WaitForSeconds(thrownObjTime);
         thrownObject.layer = thrownObjBaseLayer;
         thrownRB.mass /= thrownObjMassMultiplier;
+        int check = 0;
+        while(thrownRB.velocity.magnitude > 1f && check < 100) {
+            thrownRB.velocity *= 0.9f;
+            check++;
+            yield return null;
+        }
     }
 
     IEnumerator ThrowNPC(GameObject thrownNPC, Vector2 direction) {
@@ -565,9 +577,23 @@ public class PlayerControl : MonoBehaviour
         NPC_Movement thrownCharacter = thrownNPC.GetComponent<NPC_Movement>();
         thrownRB.velocity = direction * throwNPCInitialSpeed;
         thrownCharacter.IsThrown = true;
+        thrownCharacter.MyAnimator.Play("StateThrown", 0);
+        if(direction.x > 0) {
+            thrownCharacter.MySprite.flipX = true;
+        }
+        else {
+            thrownCharacter.MySprite.flipX = false;
+        }
         int thrownNPCBaseLayer = thrownNPC.layer;
         thrownNPC.layer = 3;
-        yield return new WaitForSeconds(thrownObjTime);
+        yield return new WaitForSeconds(thrownNPCTime);
+        thrownCharacter.MyAnimator.Play("StateIdle", 0);
+        if(thrownCharacter.Positive > 0) {
+            thrownCharacter.MySprite.flipX = false;
+        }
+        else {
+            thrownCharacter.MySprite.flipX = true;
+        }
         thrownNPC.layer = thrownNPCBaseLayer;
         thrownCharacter.IsThrown = false;
     }

@@ -7,10 +7,25 @@ public class NPC_Movement : MonoBehaviour
     [SerializeField] private float speed;
     [SerializeField] private Vector3 direction;
     private int positive;//Whether the NPC is moving in a positive or negative direction
+    public int Positive {
+        get {
+            return positive;
+        }
+    }
     [SerializeField] private float timeInDirection;//How long it goes in one direction
     private float curTime;
     private SpriteRenderer mySprite;
+    public SpriteRenderer MySprite {
+        get {
+            return mySprite;
+        }
+    }
     private Animator myAnimator;
+    public Animator MyAnimator {
+        get {
+            return myAnimator;
+        }
+    }
     [SerializeField] private float y_depth_offset;//How much its depth should be offset from its position (same as that of players)
     private Rigidbody2D myRB;
     public bool IsThrown;
