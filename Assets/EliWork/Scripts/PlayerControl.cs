@@ -87,6 +87,7 @@ public class PlayerControl : MonoBehaviour
     [SerializeField] private float throwObjectInitialSpeed;//The speed at which an object is initially thrown at
     [SerializeField] private float thrownObjMassMultiplier;
     [SerializeField] private float thrownObjTime;
+    [SerializeField] private float throwNPCInitialSpeed;
     private bool _isThrown;
     public bool IsThrown {
         get {
@@ -359,7 +360,7 @@ public class PlayerControl : MonoBehaviour
                             List<RaycastHit2D> TagBox = new List<RaycastHit2D>(Physics2D.BoxCastAll((Vector2)transform.position, myTagCollider.size, 0, tagDirection, tagDist));
                             //Removes all non-players, non-throwables from the list
                             for(int i = TagBox.Count - 1; i >= 0; i--) {
-                                if(!TagBox[i].collider.CompareTag("PlayerTag") && !TagBox[i].collider.CompareTag("Throwable")) {
+                                if(!TagBox[i].collider.CompareTag("PlayerTag") && !TagBox[i].collider.CompareTag("Throwable") && !TagBox[i].collider.CompareTag("NPC")) {
                                     TagBox.RemoveAt(i);
                                 }
                                 //Also removes itself from the list
@@ -371,8 +372,14 @@ public class PlayerControl : MonoBehaviour
                             if(TagBox.Count > 0) {
                                 //IMPORTANT: Currently the player who throws is the one who emits stars - do we want it to be the other way around?
                                 //Gets a position half-way between you and the thrown player, to emit particles
-                                Vector3 starSpawnPos = Vector3.Lerp(transform.position, TagBox[0].collider.gameObject.transform.parent.position, 0.8f) + Vector3.up * starParticleYOffset;
-                                myParticles.EmitTagStars(starSpawnPos);
+                                if(TagBox[0].collider.CompareTag("PlayerTag")) {
+                                    Vector3 starSpawnPos = Vector3.Lerp(transform.position, TagBox[0].collider.gameObject.transform.parent.position, 0.8f) + Vector3.up * starParticleYOffset;
+                                    myParticles.EmitTagStars(starSpawnPos);
+                                }
+                                else {
+                                    Vector3 starSpawnPos = Vector3.Lerp(transform.position, TagBox[0].collider.gameObject.transform.position, 0.8f) + Vector3.up * starParticleYOffset;
+                                    myParticles.EmitTagStars(starSpawnPos);
+                                }
                                 ThrowSound.Play();//SOUND
                                 throwDelayCurTime = throwDelaySuccesful;
                                 IEnumerator ThrowCoroutine;
@@ -380,9 +387,13 @@ public class PlayerControl : MonoBehaviour
                                     Vector2 throwDirection = (TagBox[0].collider.gameObject.transform.parent.position - transform.position).normalized;
                                     ThrowCoroutine = ThrowPlayer(TagBox[0].collider.gameObject.transform.parent.gameObject, throwDirection);
                                 }   
+                                else if(TagBox[0].collider.CompareTag("Throwable")) {
+                                    Vector2 throwDirection = (TagBox[0].collider.gameObject.transform.position - transform.position).normalized;
+                                    ThrowCoroutine = ThrowObject(TagBox[0].collider.gameObject.transform.parent.gameObject, throwDirection);
+                                }
                                 else {
                                     Vector2 throwDirection = (TagBox[0].collider.gameObject.transform.position - transform.position).normalized;
-                                    ThrowCoroutine = ThrowObject(TagBox[0].collider.gameObject, throwDirection);
+                                    ThrowCoroutine = ThrowNPC(TagBox[0].collider.gameObject, throwDirection);
                                 }
                                 StartCoroutine(ThrowCoroutine);
                             }
@@ -432,13 +443,12 @@ public class PlayerControl : MonoBehaviour
     //When a player is tagged, they become locked and unable to move a portion of time
     public IEnumerator WhenTagged() {
         //When tagged, if you are a gamepad user, you get some haptic feedback (trying this out)
-        Gamepad myGamepad = null;
-        if(myInput.description.deviceClass == "Gamepad") {
+        /*Gamepad myGamepad = null;
+        if(GetComponent<PlayerInput>().currentControlScheme == "Gamepad") {
             Debug.Log("Gamepad");
             myGamepad = (Gamepad)myInput;
-            myGamepad.SetMotorSpeeds(0.5f, 0.5f);
             myGamepad.ResumeHaptics();
-        }
+        }*/
         _curVelocity = Vector2.zero;
         frozen = true;
         myAnimator.Play("FallState", 0);
@@ -450,9 +460,9 @@ public class PlayerControl : MonoBehaviour
             curTime += Time.deltaTime;
         }
         //Ends the haptic feedback
-        if(myGamepad != null) {
+        /*if(myGamepad != null) {
             myGamepad.PauseHaptics();
-        }
+        }*/
         mySprite.color = newColorTag;
         frozen = false;
         if(moveSpeed == Vector2.zero) {
@@ -539,6 +549,7 @@ public class PlayerControl : MonoBehaviour
     IEnumerator ThrowObject(GameObject thrownObject, Vector2 direction) {
         Rigidbody2D thrownRB = thrownObject.GetComponent<Rigidbody2D>();
         //The object is given a force to be thrown at
+        thrownRB.angularVelocity = 0;
         thrownRB.velocity = direction * throwObjectInitialSpeed / thrownRB.mass;
         //The object has its mass multiplied while it's being thrown, increasing its impact w/ players/other objects
         thrownRB.mass *= thrownObjMassMultiplier;
@@ -547,6 +558,18 @@ public class PlayerControl : MonoBehaviour
         yield return new WaitForSeconds(thrownObjTime);
         thrownObject.layer = thrownObjBaseLayer;
         thrownRB.mass /= thrownObjMassMultiplier;
+    }
+
+    IEnumerator ThrowNPC(GameObject thrownNPC, Vector2 direction) {
+        Rigidbody2D thrownRB = thrownNPC.GetComponent<Rigidbody2D>();
+        NPC_Movement thrownCharacter = thrownNPC.GetComponent<NPC_Movement>();
+        thrownRB.velocity = direction * throwNPCInitialSpeed;
+        thrownCharacter.IsThrown = true;
+        int thrownNPCBaseLayer = thrownNPC.layer;
+        thrownNPC.layer = 3;
+        yield return new WaitForSeconds(thrownObjTime);
+        thrownNPC.layer = thrownNPCBaseLayer;
+        thrownCharacter.IsThrown = false;
     }
 
 }

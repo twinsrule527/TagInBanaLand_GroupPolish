@@ -176,9 +176,10 @@ MonoBehaviour:
   thrownPlayerFreezeTime: 0.3
   thrownPlayerUnfrozenTime: 0.5
   throwPlayerInitialSpeed: 9
-  throwObjectInitialSpeed: 50
+  throwObjectInitialSpeed: 100
   thrownObjMassMultiplier: 1000
   thrownObjTime: 1
+  throwNPCInitialSpeed: 5
   thrownFriction: 0.9
   dustParticleOffset: 0.2
   starParticleYOffset: 1

@@ -12,6 +12,8 @@ public class NPC_Movement : MonoBehaviour
     private SpriteRenderer mySprite;
     private Animator myAnimator;
     [SerializeField] private float y_depth_offset;//How much its depth should be offset from its position (same as that of players)
+    private Rigidbody2D myRB;
+    public bool IsThrown;
     void Start()
     {
         positive = 1;
@@ -19,21 +21,25 @@ public class NPC_Movement : MonoBehaviour
         myAnimator = GetComponent<Animator>();
         myAnimator.SetBool("moving", true);
         transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.y + y_depth_offset);
+        myRB = GetComponent<Rigidbody2D>();
     }
 
     void Update()
     {
-        curTime+=Time.deltaTime;
-        transform.position += direction * positive * Time.deltaTime;
-        if(curTime >= timeInDirection) {
-            curTime = 0;
-            positive = -positive;
-            if(direction.x * positive > 0) {
-                mySprite.flipX = false;
+        if(!IsThrown) {
+            curTime+=Time.deltaTime;
+            myRB.velocity= direction * positive* speed;
+            if(curTime >= timeInDirection) {
+                curTime = 0;
+                positive = -positive;
+                if(direction.x * positive > 0) {
+                    mySprite.flipX = false;
+                }
+                else {
+                    mySprite.flipX = true;
+                }
             }
-            else {
-                mySprite.flipX = true;
-            }
+            transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.y);
         }
     }
 }

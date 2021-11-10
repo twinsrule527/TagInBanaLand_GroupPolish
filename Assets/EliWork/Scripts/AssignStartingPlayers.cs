@@ -19,6 +19,8 @@ public class AssignStartingPlayers : MonoBehaviour
         var gamepads = Gamepad.all;
         foreach(Gamepad pad in gamepads) {
             newPlayer = CreatePlayer("Gamepad", pad);
+            pad.SetMotorSpeeds(0.5f, 0.5f);
+            pad.PauseHaptics();
             //newPlayer.GetComponent<PlayerControl>().myInput = pad;
         }
         PlayerControl[] allPlayers = FindObjectsOfType<PlayerControl>();
