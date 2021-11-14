@@ -191,10 +191,10 @@ MonoBehaviour:
   FallSound: {fileID: 7013193402503018790}
   ThrowSound: {fileID: 5422802268634156468}
   PitterPatter: {fileID: 3141971304010664195}
-  basePitterPatter: {fileID: 8300000, guid: ac28ed02a598e4941ad91af1613d844a, type: 3}
-  grassPitterPatter: {fileID: 8300000, guid: b8298746b639a6f439db7aaf0b5f3c1a, type: 3}
-  waterPitterPatter: {fileID: 8300000, guid: f8def905737ff00439642b9e397368a2, type: 3}
-  slimePitterPatter: {fileID: 8300000, guid: b8298746b639a6f439db7aaf0b5f3c1a, type: 3}
+  basePitterPatter: {fileID: 8300000, guid: f178a97b2fcabea4d9ef4337c5339aaa, type: 3}
+  grassPitterPatter: {fileID: 8300000, guid: c4cc46cc1b5ce744fb0cdee188b413a5, type: 3}
+  waterPitterPatter: {fileID: 8300000, guid: fa45fa6cbc8198a4eb2191426399258d, type: 3}
+  slimePitterPatter: {fileID: 8300000, guid: fa45fa6cbc8198a4eb2191426399258d, type: 3}
   depthYOffset: 0
 --- !u!50 &2787394651157998601
 Rigidbody2D:
@@ -627,18 +627,18 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: c4cc46cc1b5ce744fb0cdee188b413a5, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0
+  m_Volume: 0.25
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 500
+  MaxDistance: 5
   Pan2D: 0
   rolloffMode: 0
   BypassEffects: 0

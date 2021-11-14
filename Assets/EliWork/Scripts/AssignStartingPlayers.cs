@@ -60,9 +60,16 @@ public class AssignStartingPlayers : MonoBehaviour
                 newPlayer.transform.position = playerStartPos;
                 break;
             case 1 :
-                newPlayer = CreatePlayer("KeyboardLeft", Keyboard.current);
-                newPlayer.GetComponent<PlayerControl>().myInput = Keyboard.current;
-                newPlayer.transform.position = playerStartPos;
+                if(allPlayers[0].GetComponent<PlayerInput>().currentControlScheme == "KeyboardLeft") {
+                    newPlayer = CreatePlayer("KeyboardRight2", Keyboard.current);
+                    newPlayer.GetComponent<PlayerControl>().myInput = Keyboard.current;
+                    newPlayer.transform.position = playerStartPos;
+                }
+                else {
+                    newPlayer = CreatePlayer("KeyboardLeft", Keyboard.current);
+                    newPlayer.GetComponent<PlayerControl>().myInput = Keyboard.current;
+                    newPlayer.transform.position = playerStartPos;
+                }
                 break;
         }
         allPlayers = FindObjectsOfType<PlayerControl>();

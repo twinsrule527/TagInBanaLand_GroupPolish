@@ -222,6 +222,7 @@ public class ItManager : Singleton<ItManager>
     [SerializeField] private Image EndGameScreen;
     [SerializeField] private TMP_Text EndGameText;
     void EndGame() {
+        /*
         int winningPlayer = 0;
         float winningScore = 0;
         foreach(PlayerControl player in allPlayers) {
@@ -231,21 +232,23 @@ public class ItManager : Singleton<ItManager>
             }
             player.gameObject.SetActive(false);
         }
+        */
         normalCanvas.SetActive(false);
         endGameCanvas.SetActive(true);
         for(int i = 0; i < endGameImages.Count; i++) {
             if(i < allPlayers.Count) {
                 endGameImages[i].gameObject.SetActive(true);
                 endGameScores[i].gameObject.SetActive(true);
-                endGameScores[i].text = scoreText[i].text;
+                endGameScores[i].text = Mathf.RoundToInt(PlayerScores[i]).ToString();
+                allPlayers[i].gameObject.SetActive(false);
             }
             else {
                 endGameImages[i].gameObject.SetActive(false);
                 endGameScores[i].gameObject.SetActive(false);
             }
         }
-        EndGameText.text = "Player " + (winningPlayer + 1).ToString() + " won, with " + Mathf.RoundToInt(winningScore).ToString() + " points!";
-        EndGameScreen.gameObject.SetActive(true);
+        //EndGameText.text = "Player " + (winningPlayer + 1).ToString() + " won, with " + Mathf.RoundToInt(winningScore).ToString() + " points!";
+        //EndGameScreen.gameObject.SetActive(true);
         gameObject.SetActive(false);
     }
 

@@ -238,6 +238,10 @@ public class PlayerControl : MonoBehaviour
             }
             //Once the person is able to move again after having been thrown, they have only a little bit of control at first
             else if(IsThrown && !IsJumping) {
+                //Pauses movement sound whenever you jump/are thrown
+                if(PitterPatter.isPlaying) {
+                    PitterPatter.Pause();
+                }
                 moveSpeed *= thrownFriction;
                 if(moveSpeed.magnitude < maxSpeed) {
                     moveSpeed += movementInput * acceleration * Time.deltaTime;
@@ -263,6 +267,11 @@ public class PlayerControl : MonoBehaviour
                         myAnimator.SetInteger("direction", -1);
                         mySprite.flipX = true;
                     }
+                }
+            }
+            else {
+                if(PitterPatter.isPlaying) {
+                    PitterPatter.Pause();
                 }
             }
                 //while jumping, can't move in any direction
@@ -300,6 +309,9 @@ public class PlayerControl : MonoBehaviour
                     throwDelayCurTime = 0;
                 }
             }
+        }
+        else if(PitterPatter.isPlaying) {
+            PitterPatter.Pause();
         }
 
     }
