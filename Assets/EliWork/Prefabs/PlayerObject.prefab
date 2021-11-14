@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 1133894008033277980}
   - component: {fileID: 7013193402503018790}
   - component: {fileID: 5422802268634156468}
+  - component: {fileID: 3141971304010664195}
   m_Layer: 0
   m_Name: PlayerObject
   m_TagString: Player
@@ -165,6 +166,7 @@ MonoBehaviour:
   maxFallTime: 0.4
   maxJumpHeight: 0.6
   jumpGravityAcc: -15
+  spriteBaseY: 0
   tagDelay: 0
   tagDist: 0.5
   tagFreezeBaseTime: 0.5
@@ -176,9 +178,11 @@ MonoBehaviour:
   thrownPlayerFreezeTime: 0.3
   thrownPlayerUnfrozenTime: 0.5
   throwPlayerInitialSpeed: 9
-  throwObjectInitialSpeed: 50
+  throwObjectInitialSpeed: 100
   thrownObjMassMultiplier: 1000
   thrownObjTime: 1
+  throwNPCInitialSpeed: 9
+  thrownNPCTime: 0.7
   thrownFriction: 0.9
   dustParticleOffset: 0.2
   starParticleYOffset: 1
@@ -186,6 +190,11 @@ MonoBehaviour:
   JumpSound: {fileID: 1133894008033277980}
   FallSound: {fileID: 7013193402503018790}
   ThrowSound: {fileID: 5422802268634156468}
+  PitterPatter: {fileID: 3141971304010664195}
+  basePitterPatter: {fileID: 8300000, guid: f178a97b2fcabea4d9ef4337c5339aaa, type: 3}
+  grassPitterPatter: {fileID: 8300000, guid: c4cc46cc1b5ce744fb0cdee188b413a5, type: 3}
+  waterPitterPatter: {fileID: 8300000, guid: fa45fa6cbc8198a4eb2191426399258d, type: 3}
+  slimePitterPatter: {fileID: 8300000, guid: fa45fa6cbc8198a4eb2191426399258d, type: 3}
   depthYOffset: 0
 --- !u!50 &2787394651157998601
 Rigidbody2D:
@@ -234,7 +243,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 0ee7ee32ebc8b0d48990ad888d0b98a9, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 2be1ca4c2d732f747b9bde34f2e76bab, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -608,6 +617,102 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!82 &3141971304010664195
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2276021198055322293}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: c4cc46cc1b5ce744fb0cdee188b413a5, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 0.25
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 5
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &3074057601772091405
 GameObject:
   m_ObjectHideFlags: 0
@@ -766,7 +871,7 @@ GameObject:
   - component: {fileID: 7137206775546120571}
   - component: {fileID: 3278828356658998803}
   - component: {fileID: 7546582565520383261}
-  - component: {fileID: 7591006794480925346}
+  - component: {fileID: 2932912859280432683}
   m_Layer: 0
   m_Name: TagTrigger
   m_TagString: PlayerTag
@@ -884,7 +989,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!50 &7591006794480925346
+--- !u!50 &2932912859280432683
 Rigidbody2D:
   serializedVersion: 4
   m_ObjectHideFlags: 0
@@ -904,4 +1009,4 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 7
+  m_Constraints: 0

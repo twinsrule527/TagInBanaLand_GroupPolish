@@ -9,5 +9,6 @@ public class ShadowPos : MonoBehaviour
     void LateUpdate()
     {
         transform.position = new Vector3(transform.parent.position.x, transform.parent.position.y + y_offset, characterTransform.position.z +1f);
+        transform.rotation = Quaternion.identity;
     }
 }

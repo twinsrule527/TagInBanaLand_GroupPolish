@@ -37,7 +37,7 @@ public class Particles : MonoBehaviour
        }
    }
    public void EmitTagStars(Vector3 pos){
-       GameObject p = Instantiate(star, pos, Quaternion.identity) as GameObject;
+       GameObject p = Instantiate(star, pos + Vector3.back * 5f, Quaternion.identity) as GameObject;
    }
    public void EmitTagGrass(){
        if(Time.frameCount%4==0){

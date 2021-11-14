@@ -21,6 +21,7 @@ public class ItManager : Singleton<ItManager>
     [SerializeField] private float startTimer;
     private float curTime;
     [SerializeField] private TMP_Text timerText;
+    [SerializeField] private Animator timerAnimator;//The timer animator shouldn't actually start until the game really start
 
     [Header("Scoring")]
     private float[] PlayerScores;//How many points each player has
@@ -35,7 +36,20 @@ public class ItManager : Singleton<ItManager>
     private PlayerControl[] players;//An array of all players
 
     [SerializeField] private AudioSource startSound;//A sound which plays when the game starts
+    [SerializeField] private AudioSource fanfareSound;
+    [SerializeField] private AudioSource mainMusic;
+    [SerializeField] private float musicStartVolume;//When the music starts, it grows over time to reach its proper volume
+    [SerializeField] private float musicBaseVolume;
+    [SerializeField] private float musicTimeToReachVolume;
+    [SerializeField] private float fanfareLength;//The length of the fanfare, in seconds
     [SerializeField] private Vector3 playerStartPos;//The starting position of the players
+    
+    //List of end game objects for the UI
+    [SerializeField] private List<Image> endGameImages;
+    [SerializeField] private List<TMP_Text> endGameScores;
+    [SerializeField] private GameObject endGameCanvas;
+    [SerializeField] private GameObject normalCanvas;
+    
     void Start()
     {
         StartCoroutine("StartGame");
@@ -46,24 +60,11 @@ public class ItManager : Singleton<ItManager>
         for(int i = players.Length - 2; i < scoreIcons.Count; i++) {
             scoreIcons[i].gameObject.SetActive(false);
         }
+        timerAnimator.enabled = false;
     }
 
     void Update()
     {
-        curTime -= Time.deltaTime;
-        if(curTime <= 0) {
-            //WHen the timer reaches zero, the game ends
-            EndGame();
-        }
-        string timeString = (Mathf.FloorToInt(curTime / 60)).ToString() + ":";
-        float secs = Mathf.FloorToInt(curTime%60);
-        if(secs < 10) {
-            timeString += "0" + secs.ToString();
-        }
-        else {
-            timeString += secs.ToString();
-        }
-        timerText.text = timeString;
         //Calculate each player's score
         if(Tagger != null) {
             //Each player gets points - you have a score multiplier if you're closer to it
@@ -111,10 +112,19 @@ public class ItManager : Singleton<ItManager>
                 float displayScore = Mathf.Round(PlayerScores[player.PlayerNumber]);
                 scoreText[player.PlayerNumber].text = displayScore.ToString();
             }*/
+        //And then subtract from the timer
+        curTime -= Time.deltaTime;
+        if(curTime <= 0) {
+            //WHen the timer reaches zero, the game ends
+            EndGame();
+        }
+        string timeString = (Mathf.FloorToInt(curTime).ToString());
+        timerText.text = timeString;
         }
     }
 
-    void ChooseTagger() {
+    //After the beginning fanfare, chooses a tagger
+    private IEnumerator ChooseTagger() {
         List<PlayerInput> playersUnorder = new List<PlayerInput>(FindObjectsOfType<PlayerInput>());
         allPlayers = new List<PlayerControl>();
         //A haphazard way to get all the players, in the correct order
@@ -144,10 +154,30 @@ public class ItManager : Singleton<ItManager>
         for(int i = allPlayers.Count; i < 4; i++) {
             scoreText[i].transform.parent.gameObject.SetActive(false);
         }
+        //Before tagger is chosen, a beginning fanfar occurs
+        fanfareSound.Play();
+        tagIcon.gameObject.SetActive(false);
+        yield return new WaitForSeconds(fanfareLength);
         int rnd = Random.Range(0, allPlayers.Count);
+        tagIcon.gameObject.SetActive(true);
         _tagger = allPlayers[rnd];
         _tagger.MySprite.color = TagColor;
+        _tagger.MyParticles.EmitTagStars(_tagger.transform.position);
+        _tagger.MyParticles.EmitTagStars(_tagger.transform.position);
+        _tagger.MyParticles.EmitTagStars(_tagger.transform.position);
         tagIcon.ChangeParent(_tagger.transform);
+        startSound.Play();
+        mainMusic.Play();
+        mainMusic.volume = musicStartVolume;
+        //Sets the timer animator to work again
+        timerAnimator.enabled = true;
+        float curTime = 0;
+        while(curTime < musicTimeToReachVolume) {
+            mainMusic.volume = Mathf.Lerp(musicStartVolume, musicBaseVolume, curTime/musicTimeToReachVolume);
+            curTime+=Time.deltaTime;
+            yield return null;
+        }
+        mainMusic.volume = musicBaseVolume;
     }
 
     public void SetTagger(GameObject taggedPlayer) {
@@ -159,12 +189,32 @@ public class ItManager : Singleton<ItManager>
         _tagger.currentColorTag = _tagger.MySprite.color;
         _tagger.StartCoroutine("WhenTagged");
         tagIcon.ChangeParent(_tagger.transform);
+        StopCoroutine("TagAppear");
+        StartCoroutine("TagAppear");
+    }
+
+    [SerializeField] private Image TagWord;
+    [SerializeField] private float startSize;
+    [SerializeField] private float baseSize;
+    [SerializeField] private float tagWordTimeToGrow;
+    [SerializeField] private float tagWordTimeMaxSize;
+    private IEnumerator TagAppear() {
+        TagWord.gameObject.SetActive(true);
+        Vector3 oneOneOne = new Vector3(1f, 1f, 1f);
+        TagWord.transform.localScale = oneOneOne * startSize;
+        float myTime = 0;
+        while(myTime < tagWordTimeToGrow) {
+            TagWord.transform.localScale = oneOneOne * Mathf.Lerp(startSize, baseSize, myTime / tagWordTimeToGrow);
+            myTime += Time.deltaTime;
+            yield return null;
+        }
+        yield return new WaitForSeconds(tagWordTimeMaxSize);
+        TagWord.gameObject.SetActive(false);
     }
 
     private IEnumerator StartGame() {
-        yield return new WaitForSeconds(0.5f);
-        startSound.Play();
-        ChooseTagger();
+        yield return null;
+        StartCoroutine("ChooseTagger");
         yield return null;
     }
 
@@ -172,6 +222,7 @@ public class ItManager : Singleton<ItManager>
     [SerializeField] private Image EndGameScreen;
     [SerializeField] private TMP_Text EndGameText;
     void EndGame() {
+        /*
         int winningPlayer = 0;
         float winningScore = 0;
         foreach(PlayerControl player in allPlayers) {
@@ -181,8 +232,23 @@ public class ItManager : Singleton<ItManager>
             }
             player.gameObject.SetActive(false);
         }
-        EndGameText.text = "Player " + (winningPlayer + 1).ToString() + " won, with " + Mathf.RoundToInt(winningScore).ToString() + " points!";
-        EndGameScreen.gameObject.SetActive(true);
+        */
+        normalCanvas.SetActive(false);
+        endGameCanvas.SetActive(true);
+        for(int i = 0; i < endGameImages.Count; i++) {
+            if(i < allPlayers.Count) {
+                endGameImages[i].gameObject.SetActive(true);
+                endGameScores[i].gameObject.SetActive(true);
+                endGameScores[i].text = Mathf.RoundToInt(PlayerScores[i]).ToString();
+                allPlayers[i].gameObject.SetActive(false);
+            }
+            else {
+                endGameImages[i].gameObject.SetActive(false);
+                endGameScores[i].gameObject.SetActive(false);
+            }
+        }
+        //EndGameText.text = "Player " + (winningPlayer + 1).ToString() + " won, with " + Mathf.RoundToInt(winningScore).ToString() + " points!";
+        //EndGameScreen.gameObject.SetActive(true);
         gameObject.SetActive(false);
     }
 

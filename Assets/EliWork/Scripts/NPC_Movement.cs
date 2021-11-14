@@ -7,11 +7,28 @@ public class NPC_Movement : MonoBehaviour
     [SerializeField] private float speed;
     [SerializeField] private Vector3 direction;
     private int positive;//Whether the NPC is moving in a positive or negative direction
+    public int Positive {
+        get {
+            return positive;
+        }
+    }
     [SerializeField] private float timeInDirection;//How long it goes in one direction
     private float curTime;
     private SpriteRenderer mySprite;
+    public SpriteRenderer MySprite {
+        get {
+            return mySprite;
+        }
+    }
     private Animator myAnimator;
+    public Animator MyAnimator {
+        get {
+            return myAnimator;
+        }
+    }
     [SerializeField] private float y_depth_offset;//How much its depth should be offset from its position (same as that of players)
+    private Rigidbody2D myRB;
+    public bool IsThrown;
     void Start()
     {
         positive = 1;
@@ -19,21 +36,25 @@ public class NPC_Movement : MonoBehaviour
         myAnimator = GetComponent<Animator>();
         myAnimator.SetBool("moving", true);
         transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.y + y_depth_offset);
+        myRB = GetComponent<Rigidbody2D>();
     }
 
     void Update()
     {
-        curTime+=Time.deltaTime;
-        transform.position += direction * positive * Time.deltaTime;
-        if(curTime >= timeInDirection) {
-            curTime = 0;
-            positive = -positive;
-            if(direction.x * positive > 0) {
-                mySprite.flipX = false;
+        if(!IsThrown) {
+            curTime+=Time.deltaTime;
+            myRB.velocity= direction * positive* speed;
+            if(curTime >= timeInDirection) {
+                curTime = 0;
+                positive = -positive;
+                if(direction.x * positive > 0) {
+                    mySprite.flipX = false;
+                }
+                else {
+                    mySprite.flipX = true;
+                }
             }
-            else {
-                mySprite.flipX = true;
-            }
+            transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.y);
         }
     }
 }

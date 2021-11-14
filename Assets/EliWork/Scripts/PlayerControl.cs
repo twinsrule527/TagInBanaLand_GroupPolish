@@ -63,7 +63,7 @@ public class PlayerControl : MonoBehaviour
     //These two variables below are used to determine the player's sprite's jump arc when they jump
     [SerializeField] private float maxJumpHeight;
     [SerializeField] private float jumpGravityAcc;
-    private float spriteBaseY;
+    [SerializeField] private float spriteBaseY;
 
     //tagging-related variables
     [Header("Tagging")]
@@ -87,6 +87,8 @@ public class PlayerControl : MonoBehaviour
     [SerializeField] private float throwObjectInitialSpeed;//The speed at which an object is initially thrown at
     [SerializeField] private float thrownObjMassMultiplier;
     [SerializeField] private float thrownObjTime;
+    [SerializeField] private float throwNPCInitialSpeed;
+    [SerializeField] private float thrownNPCTime;
     private bool _isThrown;
     public bool IsThrown {
         get {
@@ -116,6 +118,11 @@ public class PlayerControl : MonoBehaviour
     }
     private BoxCollider2D myTagCollider;
     private Particles myParticles;//The particle emitter attached to this player's child
+    public Particles MyParticles {
+        get {
+            return myParticles;
+        }
+    }
     [Header("ParticleStuff")]
     [SerializeField] private float dustParticleOffset;//How much the dust particles are offset from the direction you're moving
     [SerializeField] private float starParticleYOffset;//How much above the emitSpot vertically will stars spawn
@@ -126,13 +133,21 @@ public class PlayerControl : MonoBehaviour
     [SerializeField] private AudioSource FallSound;
     [SerializeField] private AudioSource ThrowSound;
 
+    [Header("PitterPatter Audio")]//The way the pitter patter audio works is that the corresponding audio clip is switched in, and played as long as the player is moving
+    [SerializeField] private AudioSource PitterPatter;//Might need to be played at a certain point, depending on how the pitter patter works
+    [SerializeField] private AudioClip basePitterPatter;
+    [SerializeField] private AudioClip grassPitterPatter;
+    [SerializeField] private AudioClip waterPitterPatter;
+    [SerializeField] private AudioClip slimePitterPatter;
+    //If a gamepad player, they have a gamepad
+    public Gamepad myGamepad;
     void Start()
     {
         myBody = GetComponent<Rigidbody2D>();
         myAnimator = GetComponentInChildren<Animator>();
         mySprite = GetComponentInChildren<SpriteRenderer>();
         myTagCollider = GetComponentInChildren<BoxCollider2D>();
-        spriteBaseY = mySprite.transform.position.y;
+        spriteBaseY = mySprite.transform.position.y - transform.position.y;
         myParticles = GetComponentInChildren<Particles>();
     }
     void Update()
@@ -196,6 +211,10 @@ public class PlayerControl : MonoBehaviour
                 //Sets their animation depending on the direction they're facing in
                 if(movementInput == Vector2.zero) {
                     myAnimator.SetInteger("direction", 0);
+                    //Pauses the pitterpatter sound while its playing
+                    if(PitterPatter.isPlaying) {
+                        PitterPatter.Pause();
+                    }
                 }
                 else {
                     //If the player is moving, their tagDirection becomes the direction they're pointing in
@@ -211,10 +230,18 @@ public class PlayerControl : MonoBehaviour
                     //Currently, dust is emitted as long as you are moving
                     Vector3 dustSpawnPos = myParticles.transform.position - (Vector3)tagDirection * dustParticleOffset;
                     myParticles.EmitDust(dustSpawnPos);
+                    //PitterPatter sound is also played as long as the player is moving
+                    if(!PitterPatter.isPlaying) {
+                        PitterPatter.Play();
+                    }
                 }
             }
             //Once the person is able to move again after having been thrown, they have only a little bit of control at first
             else if(IsThrown && !IsJumping) {
+                //Pauses movement sound whenever you jump/are thrown
+                if(PitterPatter.isPlaying) {
+                    PitterPatter.Pause();
+                }
                 moveSpeed *= thrownFriction;
                 if(moveSpeed.magnitude < maxSpeed) {
                     moveSpeed += movementInput * acceleration * Time.deltaTime;
@@ -240,6 +267,11 @@ public class PlayerControl : MonoBehaviour
                         myAnimator.SetInteger("direction", -1);
                         mySprite.flipX = true;
                     }
+                }
+            }
+            else {
+                if(PitterPatter.isPlaying) {
+                    PitterPatter.Pause();
                 }
             }
                 //while jumping, can't move in any direction
@@ -277,6 +309,9 @@ public class PlayerControl : MonoBehaviour
                     throwDelayCurTime = 0;
                 }
             }
+        }
+        else if(PitterPatter.isPlaying) {
+            PitterPatter.Pause();
         }
 
     }
@@ -359,7 +394,7 @@ public class PlayerControl : MonoBehaviour
                             List<RaycastHit2D> TagBox = new List<RaycastHit2D>(Physics2D.BoxCastAll((Vector2)transform.position, myTagCollider.size, 0, tagDirection, tagDist));
                             //Removes all non-players, non-throwables from the list
                             for(int i = TagBox.Count - 1; i >= 0; i--) {
-                                if(!TagBox[i].collider.CompareTag("PlayerTag") && !TagBox[i].collider.CompareTag("Throwable")) {
+                                if(!TagBox[i].collider.CompareTag("PlayerTag") && !TagBox[i].collider.CompareTag("Throwable") && !TagBox[i].collider.CompareTag("NPC")) {
                                     TagBox.RemoveAt(i);
                                 }
                                 //Also removes itself from the list
@@ -371,8 +406,14 @@ public class PlayerControl : MonoBehaviour
                             if(TagBox.Count > 0) {
                                 //IMPORTANT: Currently the player who throws is the one who emits stars - do we want it to be the other way around?
                                 //Gets a position half-way between you and the thrown player, to emit particles
-                                Vector3 starSpawnPos = Vector3.Lerp(transform.position, TagBox[0].collider.gameObject.transform.parent.position, 0.8f) + Vector3.up * starParticleYOffset;
-                                myParticles.EmitTagStars(starSpawnPos);
+                                if(TagBox[0].collider.CompareTag("PlayerTag")) {
+                                    Vector3 starSpawnPos = Vector3.Lerp(transform.position, TagBox[0].collider.gameObject.transform.parent.position, 0.8f) + Vector3.up * starParticleYOffset;
+                                    myParticles.EmitTagStars(starSpawnPos);
+                                }
+                                else {
+                                    Vector3 starSpawnPos = Vector3.Lerp(transform.position, TagBox[0].collider.gameObject.transform.position, 0.8f) + Vector3.up * starParticleYOffset;
+                                    myParticles.EmitTagStars(starSpawnPos);
+                                }
                                 ThrowSound.Play();//SOUND
                                 throwDelayCurTime = throwDelaySuccesful;
                                 IEnumerator ThrowCoroutine;
@@ -380,9 +421,13 @@ public class PlayerControl : MonoBehaviour
                                     Vector2 throwDirection = (TagBox[0].collider.gameObject.transform.parent.position - transform.position).normalized;
                                     ThrowCoroutine = ThrowPlayer(TagBox[0].collider.gameObject.transform.parent.gameObject, throwDirection);
                                 }   
+                                else if(TagBox[0].collider.CompareTag("Throwable")) {
+                                    Vector2 throwDirection = (TagBox[0].collider.gameObject.transform.position - transform.position).normalized;
+                                    ThrowCoroutine = ThrowObject(TagBox[0].collider.gameObject.transform.parent.gameObject, throwDirection);
+                                }
                                 else {
                                     Vector2 throwDirection = (TagBox[0].collider.gameObject.transform.position - transform.position).normalized;
-                                    ThrowCoroutine = ThrowObject(TagBox[0].collider.gameObject, throwDirection);
+                                    ThrowCoroutine = ThrowNPC(TagBox[0].collider.gameObject.transform.parent.gameObject, throwDirection);
                                 }
                                 StartCoroutine(ThrowCoroutine);
                             }
@@ -397,6 +442,7 @@ public class PlayerControl : MonoBehaviour
     void OnTriggerEnter2D(Collider2D collider) {
         if(collider.CompareTag("DifficultTerrain")) {
             onDifficultTerrain = true;
+            PitterPatter.clip = grassPitterPatter;
         }
         else if(collider.CompareTag("TripTrigger")) {
             if(IsJumping) {
@@ -405,9 +451,11 @@ public class PlayerControl : MonoBehaviour
         }
         else if(collider.CompareTag("Water")) {
             onWater = true;
+            PitterPatter.clip = waterPitterPatter;
         }
         else if(collider.CompareTag("Slippery")) {
             onSlipperyTerrain = true;
+            PitterPatter.clip = slimePitterPatter;
         }
     }
 
@@ -416,15 +464,19 @@ public class PlayerControl : MonoBehaviour
             onDifficultTerrain = false;
             //Sets their speed to be equal to whatever their speed is supposed to be when leaving the grass
             moveSpeed *= difficultTerrainSpeedModifier;
+            PitterPatter.clip = basePitterPatter;
         }
         else if(collider.CompareTag("TripTrigger")) {
             tripActive = false;
         }
         else if(collider.CompareTag("Water")) {
             onWater = false;
+            moveSpeed *= waterTerrainSpeedModifier;
+            PitterPatter.clip = basePitterPatter;
         }
         else if(collider.CompareTag("Slippery")) {
             onSlipperyTerrain = false;
+            PitterPatter.clip = basePitterPatter;
         }
     }
 
@@ -432,12 +484,9 @@ public class PlayerControl : MonoBehaviour
     //When a player is tagged, they become locked and unable to move a portion of time
     public IEnumerator WhenTagged() {
         //When tagged, if you are a gamepad user, you get some haptic feedback (trying this out)
-        Gamepad myGamepad = null;
-        if(myInput.description.deviceClass == "Gamepad") {
-            Debug.Log("Gamepad");
-            myGamepad = (Gamepad)myInput;
-            myGamepad.SetMotorSpeeds(0.5f, 0.5f);
-            myGamepad.ResumeHaptics();
+        if(myGamepad != null) {
+            IEnumerator buzz = AssignStartingPlayers.BuzzController(myGamepad);
+            StartCoroutine(buzz);
         }
         _curVelocity = Vector2.zero;
         frozen = true;
@@ -450,9 +499,9 @@ public class PlayerControl : MonoBehaviour
             curTime += Time.deltaTime;
         }
         //Ends the haptic feedback
-        if(myGamepad != null) {
+        /*if(myGamepad != null) {
             myGamepad.PauseHaptics();
-        }
+        }*/
         mySprite.color = newColorTag;
         frozen = false;
         if(moveSpeed == Vector2.zero) {
@@ -539,6 +588,7 @@ public class PlayerControl : MonoBehaviour
     IEnumerator ThrowObject(GameObject thrownObject, Vector2 direction) {
         Rigidbody2D thrownRB = thrownObject.GetComponent<Rigidbody2D>();
         //The object is given a force to be thrown at
+        thrownRB.angularVelocity = 0;
         thrownRB.velocity = direction * throwObjectInitialSpeed / thrownRB.mass;
         //The object has its mass multiplied while it's being thrown, increasing its impact w/ players/other objects
         thrownRB.mass *= thrownObjMassMultiplier;
@@ -546,7 +596,43 @@ public class PlayerControl : MonoBehaviour
         thrownObject.layer = 3;
         yield return new WaitForSeconds(thrownObjTime);
         thrownObject.layer = thrownObjBaseLayer;
+        //if something wrong happens, it reverts to layer 0
+        if(thrownObject.layer == 3) {
+            thrownObject.layer = 0;
+        }
         thrownRB.mass /= thrownObjMassMultiplier;
+        int check = 0;
+        while(thrownRB.velocity.magnitude > 1f && check < 100) {
+            thrownRB.velocity *= 0.9f;
+            check++;
+            yield return null;
+        }
+    }
+
+    IEnumerator ThrowNPC(GameObject thrownNPC, Vector2 direction) {
+        Rigidbody2D thrownRB = thrownNPC.GetComponent<Rigidbody2D>();
+        NPC_Movement thrownCharacter = thrownNPC.GetComponent<NPC_Movement>();
+        thrownRB.velocity = direction * throwNPCInitialSpeed;
+        thrownCharacter.IsThrown = true;
+        thrownCharacter.MyAnimator.Play("StateThrown", 0);
+        if(direction.x > 0) {
+            thrownCharacter.MySprite.flipX = true;
+        }
+        else {
+            thrownCharacter.MySprite.flipX = false;
+        }
+        int thrownNPCBaseLayer = thrownNPC.layer;
+        thrownNPC.layer = 3;
+        yield return new WaitForSeconds(thrownNPCTime);
+        thrownCharacter.MyAnimator.Play("StateIdle", 0);
+        if(thrownCharacter.Positive > 0) {
+            thrownCharacter.MySprite.flipX = false;
+        }
+        else {
+            thrownCharacter.MySprite.flipX = true;
+        }
+        thrownNPC.layer = thrownNPCBaseLayer;
+        thrownCharacter.IsThrown = false;
     }
 
 }
