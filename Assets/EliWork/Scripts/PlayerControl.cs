@@ -133,6 +133,12 @@ public class PlayerControl : MonoBehaviour
     [SerializeField] private AudioSource FallSound;
     [SerializeField] private AudioSource ThrowSound;
 
+    [Header("PitterPatter Audio")]//The way the pitter patter audio works is that the corresponding audio clip is switched in, and played as long as the player is moving
+    [SerializeField] private AudioSource PitterPatter;//Might need to be played at a certain point, depending on how the pitter patter works
+    [SerializeField] private AudioClip basePitterPatter;
+    [SerializeField] private AudioClip grassPitterPatter;
+    [SerializeField] private AudioClip waterPitterPatter;
+    [SerializeField] private AudioClip slimePitterPatter;
     //If a gamepad player, they have a gamepad
     public Gamepad myGamepad;
     void Start()
@@ -205,6 +211,10 @@ public class PlayerControl : MonoBehaviour
                 //Sets their animation depending on the direction they're facing in
                 if(movementInput == Vector2.zero) {
                     myAnimator.SetInteger("direction", 0);
+                    //Pauses the pitterpatter sound while its playing
+                    if(PitterPatter.isPlaying) {
+                        PitterPatter.Pause();
+                    }
                 }
                 else {
                     //If the player is moving, their tagDirection becomes the direction they're pointing in
@@ -220,6 +230,10 @@ public class PlayerControl : MonoBehaviour
                     //Currently, dust is emitted as long as you are moving
                     Vector3 dustSpawnPos = myParticles.transform.position - (Vector3)tagDirection * dustParticleOffset;
                     myParticles.EmitDust(dustSpawnPos);
+                    //PitterPatter sound is also played as long as the player is moving
+                    if(!PitterPatter.isPlaying) {
+                        PitterPatter.Play();
+                    }
                 }
             }
             //Once the person is able to move again after having been thrown, they have only a little bit of control at first
@@ -416,6 +430,7 @@ public class PlayerControl : MonoBehaviour
     void OnTriggerEnter2D(Collider2D collider) {
         if(collider.CompareTag("DifficultTerrain")) {
             onDifficultTerrain = true;
+            PitterPatter.clip = grassPitterPatter;
         }
         else if(collider.CompareTag("TripTrigger")) {
             if(IsJumping) {
@@ -424,9 +439,11 @@ public class PlayerControl : MonoBehaviour
         }
         else if(collider.CompareTag("Water")) {
             onWater = true;
+            PitterPatter.clip = waterPitterPatter;
         }
         else if(collider.CompareTag("Slippery")) {
             onSlipperyTerrain = true;
+            PitterPatter.clip = slimePitterPatter;
         }
     }
 
@@ -435,15 +452,19 @@ public class PlayerControl : MonoBehaviour
             onDifficultTerrain = false;
             //Sets their speed to be equal to whatever their speed is supposed to be when leaving the grass
             moveSpeed *= difficultTerrainSpeedModifier;
+            PitterPatter.clip = basePitterPatter;
         }
         else if(collider.CompareTag("TripTrigger")) {
             tripActive = false;
         }
         else if(collider.CompareTag("Water")) {
             onWater = false;
+            moveSpeed *= waterTerrainSpeedModifier;
+            PitterPatter.clip = basePitterPatter;
         }
         else if(collider.CompareTag("Slippery")) {
             onSlipperyTerrain = false;
+            PitterPatter.clip = basePitterPatter;
         }
     }
 
@@ -563,6 +584,10 @@ public class PlayerControl : MonoBehaviour
         thrownObject.layer = 3;
         yield return new WaitForSeconds(thrownObjTime);
         thrownObject.layer = thrownObjBaseLayer;
+        //if something wrong happens, it reverts to layer 0
+        if(thrownObject.layer == 3) {
+            thrownObject.layer = 0;
+        }
         thrownRB.mass /= thrownObjMassMultiplier;
         int check = 0;
         while(thrownRB.velocity.magnitude > 1f && check < 100) {

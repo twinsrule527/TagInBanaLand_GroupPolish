@@ -21,6 +21,7 @@ public class ItManager : Singleton<ItManager>
     [SerializeField] private float startTimer;
     private float curTime;
     [SerializeField] private TMP_Text timerText;
+    [SerializeField] private Animator timerAnimator;//The timer animator shouldn't actually start until the game really start
 
     [Header("Scoring")]
     private float[] PlayerScores;//How many points each player has
@@ -36,8 +37,19 @@ public class ItManager : Singleton<ItManager>
 
     [SerializeField] private AudioSource startSound;//A sound which plays when the game starts
     [SerializeField] private AudioSource fanfareSound;
+    [SerializeField] private AudioSource mainMusic;
+    [SerializeField] private float musicStartVolume;//When the music starts, it grows over time to reach its proper volume
+    [SerializeField] private float musicBaseVolume;
+    [SerializeField] private float musicTimeToReachVolume;
     [SerializeField] private float fanfareLength;//The length of the fanfare, in seconds
     [SerializeField] private Vector3 playerStartPos;//The starting position of the players
+    
+    //List of end game objects for the UI
+    [SerializeField] private List<Image> endGameImages;
+    [SerializeField] private List<TMP_Text> endGameScores;
+    [SerializeField] private GameObject endGameCanvas;
+    [SerializeField] private GameObject normalCanvas;
+    
     void Start()
     {
         StartCoroutine("StartGame");
@@ -48,6 +60,7 @@ public class ItManager : Singleton<ItManager>
         for(int i = players.Length - 2; i < scoreIcons.Count; i++) {
             scoreIcons[i].gameObject.SetActive(false);
         }
+        timerAnimator.enabled = false;
     }
 
     void Update()
@@ -154,7 +167,17 @@ public class ItManager : Singleton<ItManager>
         _tagger.MyParticles.EmitTagStars(_tagger.transform.position);
         tagIcon.ChangeParent(_tagger.transform);
         startSound.Play();
-        yield return null;
+        mainMusic.Play();
+        mainMusic.volume = musicStartVolume;
+        //Sets the timer animator to work again
+        timerAnimator.enabled = true;
+        float curTime = 0;
+        while(curTime < musicTimeToReachVolume) {
+            mainMusic.volume = Mathf.Lerp(musicStartVolume, musicBaseVolume, curTime/musicTimeToReachVolume);
+            curTime+=Time.deltaTime;
+            yield return null;
+        }
+        mainMusic.volume = musicBaseVolume;
     }
 
     public void SetTagger(GameObject taggedPlayer) {
@@ -207,6 +230,19 @@ public class ItManager : Singleton<ItManager>
                 winningScore = PlayerScores[player.PlayerNumber];
             }
             player.gameObject.SetActive(false);
+        }
+        normalCanvas.SetActive(false);
+        endGameCanvas.SetActive(true);
+        for(int i = 0; i < endGameImages.Count; i++) {
+            if(i < allPlayers.Count) {
+                endGameImages[i].gameObject.SetActive(true);
+                endGameScores[i].gameObject.SetActive(true);
+                endGameScores[i].text = scoreText[i].text;
+            }
+            else {
+                endGameImages[i].gameObject.SetActive(false);
+                endGameScores[i].gameObject.SetActive(false);
+            }
         }
         EndGameText.text = "Player " + (winningPlayer + 1).ToString() + " won, with " + Mathf.RoundToInt(winningScore).ToString() + " points!";
         EndGameScreen.gameObject.SetActive(true);

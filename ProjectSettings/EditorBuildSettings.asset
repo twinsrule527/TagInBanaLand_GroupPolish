@@ -12,6 +12,9 @@ EditorBuildSettings:
     path: Assets/Scenes/EliWorkScene.unity
     guid: 824aac666ecf182418cc3e89753f308c
   - enabled: 1
+    path: Assets/Scenes/StartScene.unity
+    guid: 57ae3c82609119042af54745179c4170
+  - enabled: 1
     path: Assets/Scenes/PlayScene.unity
     guid: 771c347b374d17d44a71cf923bdcac12
   m_configObjects:
